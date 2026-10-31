@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Klarwerk · Deine Website",
+    "slug": "klarwerk",
+    "version": "0.1.0",
+    "platforms": ["web"],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Klarwerk",
+      "description": "Eine eigene Website. Ganz einfach."
+    }
+  }
+}

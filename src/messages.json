@@ -1,0 +1,1530 @@
+{
+  "Inhalte": {
+    "de": "Inhalte",
+    "en": "Content"
+  },
+  "Design": {
+    "de": "Design",
+    "en": "Design"
+  },
+  "Raster": {
+    "de": "Raster",
+    "en": "Grid"
+  },
+  "Anbindungen": {
+    "de": "Anbindungen",
+    "en": "Integrations"
+  },
+  "Einstellungen": {
+    "de": "Einstellungen",
+    "en": "Settings"
+  },
+  "Schließen": {
+    "de": "Schließen",
+    "en": "Close"
+  },
+  "DEIN AUFTRITT BEGINNT HIER": {
+    "de": "DEIN AUFTRITT BEGINNT HIER",
+    "en": "YOUR ONLINE PRESENCE STARTS HERE"
+  },
+  "Ein guter Anfang.": {
+    "de": "Ein guter Anfang.",
+    "en": "A good beginning."
+  },
+  "Schön, dass du da bist.": {
+    "de": "Schön, dass du da bist.",
+    "en": "Good to see you."
+  },
+  "Richte deinen persönlichen Adminzugang ein. Danach gestalten wir deine Website.": {
+    "de": "Richte deinen persönlichen Adminzugang ein. Danach gestalten wir deine Website.",
+    "en": "Set up your admin account. Then let's build your website."
+  },
+  "Melde dich an und mach deine Website zu deiner.": {
+    "de": "Melde dich an und mach deine Website zu deiner.",
+    "en": "Sign in and make your website your own."
+  },
+  "Benutzername": {
+    "de": "Benutzername",
+    "en": "Username"
+  },
+  "Einrichtungscode": {
+    "de": "Einrichtungscode",
+    "en": "Setup code"
+  },
+  "Steht in der Konsole, in der der Klarwerk-Server läuft.": {
+    "de": "Steht in der Konsole, in der der Klarwerk-Server läuft.",
+    "en": "Shown in the console running the Klarwerk server."
+  },
+  "Passwort": {
+    "de": "Passwort",
+    "en": "Password"
+  },
+  "Mindestens 12 Zeichen.": {
+    "de": "Mindestens 12 Zeichen.",
+    "en": "At least 12 characters."
+  },
+  "Adminzugang erstellen": {
+    "de": "Adminzugang erstellen",
+    "en": "Create admin account"
+  },
+  "Anmelden": {
+    "de": "Anmelden",
+    "en": "Sign in"
+  },
+  "Deine Inhalte bleiben auf deinem Server.": {
+    "de": "Deine Inhalte bleiben auf deinem Server.",
+    "en": "Your content stays on your server."
+  },
+  "Einfach gestalten. Selbstständig durchstarten.": {
+    "de": "Einfach gestalten. Selbstständig durchstarten.",
+    "en": "Build simply. Start independently."
+  },
+  "PLATZ FÜR DEINEN NÄCHSTEN SCHRITT": {
+    "de": "PLATZ FÜR DEINEN NÄCHSTEN SCHRITT",
+    "en": "ROOM FOR YOUR NEXT STEP"
+  },
+  "Deine Website.": {
+    "de": "Deine Website.",
+    "en": "Your website."
+  },
+  "Dein Anfang.": {
+    "de": "Dein Anfang.",
+    "en": "Your beginning."
+  },
+  "Website wird geladen …": {
+    "de": "Website wird geladen …",
+    "en": "Loading website …"
+  },
+  "Website gestalten": {
+    "de": "Website gestalten",
+    "en": "Build website"
+  },
+  "Klarwerk · Deine Website gestalten": {
+    "de": "Klarwerk · Deine Website gestalten",
+    "en": "Klarwerk · Build your website"
+  },
+  "Server starten": {
+    "de": "Server starten",
+    "en": "Start the server"
+  },
+  "Erneut versuchen": {
+    "de": "Erneut versuchen",
+    "en": "Try again"
+  },
+  "Klarwerk wird geladen …": {
+    "de": "Klarwerk wird geladen …",
+    "en": "Loading Klarwerk …"
+  },
+  "Gespeichert": {
+    "de": "Gespeichert",
+    "en": "Saved"
+  },
+  "Die Vorlagentexte sind umgestellt. Eigene Texte bitte selbst anpassen.": {
+    "de": "Die Vorlagentexte sind umgestellt. Eigene Texte bitte selbst anpassen.",
+    "en": "Template wording updated. Please adjust your own text manually."
+  },
+  "Die Texte sind umgestellt.": {
+    "de": "Die Texte sind umgestellt.",
+    "en": "Wording updated."
+  },
+  "Speicherkonflikt: Bitte JSON sichern und die aktuelle Version neu laden.": {
+    "de": "Speicherkonflikt: Bitte JSON sichern und die aktuelle Version neu laden.",
+    "en": "Save conflict: export your draft as JSON and reload the current version."
+  },
+  "Wird gespeichert …": {
+    "de": "Wird gespeichert …",
+    "en": "Saving …"
+  },
+  "Änderungen offen": {
+    "de": "Änderungen offen",
+    "en": "Unsaved changes"
+  },
+  "Nicht gespeichert": {
+    "de": "Nicht gespeichert",
+    "en": "Not saved"
+  },
+  "Element hinzugefügt. Text und Position kannst du rechts ändern.": {
+    "de": "Element hinzugefügt. Text und Position kannst du rechts ändern.",
+    "en": "Element added. Edit its text and position on the right."
+  },
+  "Deine Website wurde als JSON gesichert.": {
+    "de": "Deine Website wurde als JSON gesichert.",
+    "en": "Your website was exported as JSON."
+  },
+  "Bild hochgeladen. Ergänze eine passende Bildbeschreibung.": {
+    "de": "Bild hochgeladen. Ergänze eine passende Bildbeschreibung.",
+    "en": "Image uploaded. Add a description of the image."
+  },
+  "Deine Website ist veröffentlicht.": {
+    "de": "Deine Website ist veröffentlicht.",
+    "en": "Your website is published."
+  },
+  "Dein Arbeitsbereich wird vorbereitet …": {
+    "de": "Dein Arbeitsbereich wird vorbereitet …",
+    "en": "Preparing your workspace …"
+  },
+  "DEIN AUSGANGSPUNKT": {
+    "de": "DEIN AUSGANGSPUNKT",
+    "en": "YOUR STARTING POINT"
+  },
+  "Vorlage wechseln": {
+    "de": "Vorlage wechseln",
+    "en": "Change template"
+  },
+  "Anrede": {
+    "de": "Anrede",
+    "en": "Voice and address"
+  },
+  "Gilt für die Vorlagentexte und die festen Überschriften der Website.": {
+    "de": "Gilt für die Vorlagentexte und die festen Überschriften der Website.",
+    "en": "Applies to template wording and built-in website headings."
+  },
+  "Besucher ansprechen mit": {
+    "de": "Besucher ansprechen mit",
+    "en": "Address visitors using"
+  },
+  "Du": {
+    "de": "Du",
+    "en": "Informal German (du)"
+  },
+  "Sie": {
+    "de": "Sie",
+    "en": "Formal German (Sie)"
+  },
+  "Wer spricht": {
+    "de": "Wer spricht",
+    "en": "Who is speaking"
+  },
+  "Ich": {
+    "de": "Ich",
+    "en": "I"
+  },
+  "Wir": {
+    "de": "Wir",
+    "en": "We"
+  },
+  "In einem Text": {
+    "de": "In einem Text",
+    "en": "One text"
+  },
+  "In {count} Texten": {
+    "de": "In {count} Texten",
+    "en": "{count} texts"
+  },
+  "steht noch": {
+    "de": "steht noch",
+    "en": "still uses"
+  },
+  "„du“": {
+    "de": "„du“",
+    "en": "“du”"
+  },
+  "„Sie“": {
+    "de": "„Sie“",
+    "en": "“Sie”"
+  },
+  "Zeigen": {
+    "de": "Zeigen",
+    "en": "Show"
+  },
+  "Seitenabschnitte": {
+    "de": "Seitenabschnitte",
+    "en": "Page sections"
+  },
+  "Die Navigation entsteht automatisch.": {
+    "de": "Die Navigation entsteht automatisch.",
+    "en": "Navigation is created automatically."
+  },
+  "Header & Navigation": {
+    "de": "Header & Navigation",
+    "en": "Header & navigation"
+  },
+  "nach oben": {
+    "de": "nach oben",
+    "en": "up"
+  },
+  "Ein neuer Abschnitt": {
+    "de": "Ein neuer Abschnitt",
+    "en": "A new section"
+  },
+  "Neuer Abschnitt": {
+    "de": "Neuer Abschnitt",
+    "en": "New section"
+  },
+  "Abschnitt hinzufügen": {
+    "de": "Abschnitt hinzufügen",
+    "en": "Add section"
+  },
+  "Was möchtest du hinzufügen?": {
+    "de": "Was möchtest du hinzufügen?",
+    "en": "What would you like to add?"
+  },
+  "Ein Klick. Dann direkt gestalten.": {
+    "de": "Ein Klick. Dann direkt gestalten.",
+    "en": "One click. Then make it your own."
+  },
+  "Überschrift": {
+    "de": "Überschrift",
+    "en": "Heading"
+  },
+  "Text": {
+    "de": "Text",
+    "en": "Text"
+  },
+  "Bild": {
+    "de": "Bild",
+    "en": "Image"
+  },
+  "Button": {
+    "de": "Button",
+    "en": "Button"
+  },
+  "Header & Kontaktdaten": {
+    "de": "Header & Kontaktdaten",
+    "en": "Header & contact details"
+  },
+  "Name / Unternehmen": {
+    "de": "Name / Unternehmen",
+    "en": "Name / business"
+  },
+  "Unterzeile": {
+    "de": "Unterzeile",
+    "en": "Tagline"
+  },
+  "E-Mail": {
+    "de": "E-Mail",
+    "en": "Email"
+  },
+  "Telefon": {
+    "de": "Telefon",
+    "en": "Phone"
+  },
+  "Adresse": {
+    "de": "Adresse",
+    "en": "Address"
+  },
+  "Leistungen bearbeiten": {
+    "de": "Leistungen bearbeiten",
+    "en": "Edit services"
+  },
+  "Leistung": {
+    "de": "Leistung",
+    "en": "Service"
+  },
+  "Beschreibung": {
+    "de": "Beschreibung",
+    "en": "Description"
+  },
+  "Entfernen": {
+    "de": "Entfernen",
+    "en": "Remove"
+  },
+  "Neue Leistung": {
+    "de": "Neue Leistung",
+    "en": "New service"
+  },
+  "Beschreibe hier dein Angebot.": {
+    "de": "Beschreibe hier dein Angebot.",
+    "en": "Describe your service here."
+  },
+  "Leistung hinzufügen": {
+    "de": "Leistung hinzufügen",
+    "en": "Add service"
+  },
+  "DEIN STIL. EIN STIMMIGER AUFTRITT.": {
+    "de": "DEIN STIL. EIN STIMMIGER AUFTRITT.",
+    "en": "YOUR STYLE. A COHERENT PRESENCE."
+  },
+  "Farben, die zu dir passen.": {
+    "de": "Farben, die zu dir passen.",
+    "en": "Colors that suit you."
+  },
+  "Starte mit einer Palette oder wähle deine eigenen sechs Farben.": {
+    "de": "Starte mit einer Palette oder wähle deine eigenen sechs Farben.",
+    "en": "Start with a palette or choose your own six colors."
+  },
+  "Eine Textfarbe hat wenig Kontrast zum Hintergrund. Wähle für gut lesbare Texte dunklere Farben oder eine unserer Paletten.": {
+    "de": "Eine Textfarbe hat wenig Kontrast zum Hintergrund. Wähle für gut lesbare Texte dunklere Farben oder eine unserer Paletten.",
+    "en": "A text color has low contrast against the background. Choose darker colors or one of our palettes for readable text."
+  },
+  "Deine Schrift": {
+    "de": "Deine Schrift",
+    "en": "Your font"
+  },
+  "Geräteschriften, ohne externe Downloads.": {
+    "de": "Geräteschriften, ohne externe Downloads.",
+    "en": "System fonts, without external downloads."
+  },
+  "ORDNUNG, DIE MAN NICHT SIEHT.": {
+    "de": "ORDNUNG, DIE MAN NICHT SIEHT.",
+    "en": "STRUCTURE YOU DON'T SEE."
+  },
+  "Dein unsichtbarer Helfer.": {
+    "de": "Dein unsichtbarer Helfer.",
+    "en": "Your invisible helper."
+  },
+  "Ein Raster hält Texte und Bilder auf einer Linie. Oder du platzierst alles ganz frei.": {
+    "de": "Ein Raster hält Texte und Bilder auf einer Linie. Oder du platzierst alles ganz frei.",
+    "en": "A grid keeps text and images aligned. Or place everything freely."
+  },
+  "Am Raster einrasten": {
+    "de": "Am Raster einrasten",
+    "en": "Snap to grid"
+  },
+  "Beim Ziehen automatisch ausrichten": {
+    "de": "Beim Ziehen automatisch ausrichten",
+    "en": "Align automatically when dragging"
+  },
+  "Raster einblenden": {
+    "de": "Raster einblenden",
+    "en": "Show grid"
+  },
+  "Nur im Editor sichtbar": {
+    "de": "Nur im Editor sichtbar",
+    "en": "Visible only in the editor"
+  },
+  "Spalten": {
+    "de": "Spalten",
+    "en": "columns"
+  },
+  "Eigene Spaltenanzahl (1–24)": {
+    "de": "Eigene Spaltenanzahl (1–24)",
+    "en": "Custom number of columns (1–24)"
+  },
+  "Spaltenabstand ·": {
+    "de": "Spaltenabstand ·",
+    "en": "Column gap ·"
+  },
+  "Zeilenraster ·": {
+    "de": "Zeilenraster ·",
+    "en": "Row grid ·"
+  },
+  "Aktueller Abschnitt": {
+    "de": "Aktueller Abschnitt",
+    "en": "Current section"
+  },
+  "Abschnitt auswählen": {
+    "de": "Abschnitt auswählen",
+    "en": "Choose section"
+  },
+  "Name in der Navigation": {
+    "de": "Name in der Navigation",
+    "en": "Navigation label"
+  },
+  "Abschnittshöhe (px)": {
+    "de": "Abschnittshöhe (px)",
+    "en": "Section height (px)"
+  },
+  "Die Elemente sind am Raster ausgerichtet.": {
+    "de": "Die Elemente sind am Raster ausgerichtet.",
+    "en": "Elements aligned to the grid."
+  },
+  "Abschnitt ausrichten": {
+    "de": "Abschnitt ausrichten",
+    "en": "Align section"
+  },
+  "Diesen Abschnitt mit allen Elementen entfernen?": {
+    "de": "Diesen Abschnitt mit allen Elementen entfernen?",
+    "en": "Remove this section and all its elements?"
+  },
+  "Abschnitt entfernen": {
+    "de": "Abschnitt entfernen",
+    "en": "Remove section"
+  },
+  "DEINE WERKZEUGE. AN EINEM ORT.": {
+    "de": "DEINE WERKZEUGE. AN EINEM ORT.",
+    "en": "YOUR TOOLS. IN ONE PLACE."
+  },
+  "Weniger Aufwand. Mehr Verbindung.": {
+    "de": "Weniger Aufwand. Mehr Verbindung.",
+    "en": "Less work. More connection."
+  },
+  "Buchungen, Berufsprofil und Projekte direkt auf deiner Website.": {
+    "de": "Buchungen, Berufsprofil und Projekte direkt auf deiner Website.",
+    "en": "Bookings, professional profiles, and projects on your website."
+  },
+  "Termine & Berufssoftware": {
+    "de": "Termine & Berufssoftware",
+    "en": "Appointments & business software"
+  },
+  "Dein Anbieter": {
+    "de": "Dein Anbieter",
+    "en": "Your provider"
+  },
+  "Kein Anbieter": {
+    "de": "Kein Anbieter",
+    "en": "No provider"
+  },
+  "RA-MICRO / Mandantenportal": {
+    "de": "RA-MICRO / Mandantenportal",
+    "en": "RA-MICRO / client portal"
+  },
+  "Anderer Anbieter": {
+    "de": "Anderer Anbieter",
+    "en": "Other provider"
+  },
+  "Öffentlicher Buchungs- oder Portallink": {
+    "de": "Öffentlicher Buchungs- oder Portallink",
+    "en": "Public booking or portal link"
+  },
+  "Kopiere den Link aus deinem Anbieterkonto. Der Hauptbutton öffnet diese Adresse.": {
+    "de": "Kopiere den Link aus deinem Anbieterkonto. Der Hauptbutton öffnet diese Adresse.",
+    "en": "Copy the link from your provider account. The main button opens this address."
+  },
+  "Buchungslink hinterlegt. Beim Veröffentlichen wird er übernommen.": {
+    "de": "Buchungslink hinterlegt. Beim Veröffentlichen wird er übernommen.",
+    "en": "Booking link saved. It will go live when you publish."
+  },
+  "Deinen Buchungslink einfügen – schon können Besucher Termine anfragen.": {
+    "de": "Deinen Buchungslink einfügen – schon können Besucher Termine anfragen.",
+    "en": "Add your booking link so visitors can request appointments."
+  },
+  "Direkter Zugriff auf Praxis- oder Kanzleidaten benötigt eine vom Anbieter freigeschaltete API. Hier werden keine Patienten- oder Mandantendaten importiert.": {
+    "de": "Direkter Zugriff auf Praxis- oder Kanzleidaten benötigt eine vom Anbieter freigeschaltete API. Hier werden keine Patienten- oder Mandantendaten importiert.",
+    "en": "Direct access to practice or law-firm data requires an API enabled by the provider. Patient and client records are not imported here."
+  },
+  "GitHub-Projekte": {
+    "de": "GitHub-Projekte",
+    "en": "GitHub projects"
+  },
+  "GitHub-Benutzername": {
+    "de": "GitHub-Benutzername",
+    "en": "GitHub username"
+  },
+  "Alle öffentlichen eigenen Repositories werden importiert, auch über mehrere Seiten.": {
+    "de": "Alle öffentlichen eigenen Repositories werden importiert, auch über mehrere Seiten.",
+    "en": "All your public repositories are imported, including multiple pages."
+  },
+  "Repositories importieren": {
+    "de": "Repositories importieren",
+    "en": "Import repositories"
+  },
+  "Repositories importiert": {
+    "de": "Repositories importiert",
+    "en": "repositories imported"
+  },
+  "Projekte auf Website zeigen": {
+    "de": "Projekte auf Website zeigen",
+    "en": "Show projects on website"
+  },
+  "Dein öffentliches LinkedIn-Profil": {
+    "de": "Dein öffentliches LinkedIn-Profil",
+    "en": "Your public LinkedIn profile"
+  },
+  "Mit LinkedIn verbinden": {
+    "de": "Mit LinkedIn verbinden",
+    "en": "Connect with LinkedIn"
+  },
+  "Dein Name wurde aus LinkedIn übernommen.": {
+    "de": "Dein Name wurde aus LinkedIn übernommen.",
+    "en": "Your name was imported from LinkedIn."
+  },
+  "Bitte zuerst mit LinkedIn verbinden.": {
+    "de": "Bitte zuerst mit LinkedIn verbinden.",
+    "en": "Connect with LinkedIn first."
+  },
+  "Profilnamen übernehmen": {
+    "de": "Profilnamen übernehmen",
+    "en": "Use profile name"
+  },
+  "Profillink sofort nutzbar. Profilimport nach Einrichtung einer LinkedIn-App auf dem Server.": {
+    "de": "Profillink sofort nutzbar. Profilimport nach Einrichtung einer LinkedIn-App auf dem Server.",
+    "en": "The profile link works immediately. Profile import requires a LinkedIn app configured on the server."
+  },
+  "Eigene Berufssoftware": {
+    "de": "Eigene Berufssoftware",
+    "en": "Your business software"
+  },
+  "Importiere öffentliche Leistungsbeschreibungen über eine serverseitig konfigurierte API-Brücke.": {
+    "de": "Importiere öffentliche Leistungsbeschreibungen über eine serverseitig konfigurierte API-Brücke.",
+    "en": "Import public service descriptions through an API bridge configured on the server."
+  },
+  "Leistungen aus der Berufssoftware importiert.": {
+    "de": "Leistungen aus der Berufssoftware importiert.",
+    "en": "Services imported from your business software."
+  },
+  "Leistungen importieren": {
+    "de": "Leistungen importieren",
+    "en": "Import services"
+  },
+  "API auf dem Server eingerichtet.": {
+    "de": "API auf dem Server eingerichtet.",
+    "en": "API configured on the server."
+  },
+  "Einrichtung: BUSINESS_API_URL und optional BUSINESS_API_TOKEN in der Serverumgebung. Details im README.": {
+    "de": "Einrichtung: BUSINESS_API_URL und optional BUSINESS_API_TOKEN in der Serverumgebung. Details im README.",
+    "en": "Setup: BUSINESS_API_URL and optionally BUSINESS_API_TOKEN in the server environment. See README for details."
+  },
+  "ALLES GUT AUFGEHOBEN.": {
+    "de": "ALLES GUT AUFGEHOBEN.",
+    "en": "EVERYTHING IN GOOD HANDS."
+  },
+  "Deine Website verwalten.": {
+    "de": "Deine Website verwalten.",
+    "en": "Manage your website."
+  },
+  "SQLite auf deinem Server": {
+    "de": "SQLite auf deinem Server",
+    "en": "SQLite on your server"
+  },
+  "Entwurf und Veröffentlichung getrennt": {
+    "de": "Entwurf und Veröffentlichung getrennt",
+    "en": "Draft and published site kept separate"
+  },
+  "Website als JSON sichern": {
+    "de": "Website als JSON sichern",
+    "en": "Export website as JSON"
+  },
+  "JSON-Sicherung laden": {
+    "de": "JSON-Sicherung laden",
+    "en": "Load JSON backup"
+  },
+  "Die Sicherung ist zu groß.": {
+    "de": "Die Sicherung ist zu groß.",
+    "en": "The backup is too large."
+  },
+  "Den aktuellen Entwurf durch diese Sicherung ersetzen?": {
+    "de": "Den aktuellen Entwurf durch diese Sicherung ersetzen?",
+    "en": "Replace the current draft with this backup?"
+  },
+  "Sicherung als Entwurf geladen.": {
+    "de": "Sicherung als Entwurf geladen.",
+    "en": "Backup loaded as a draft."
+  },
+  "Diese Datei ist keine gültige Klarwerk-Sicherung.": {
+    "de": "Diese Datei ist keine gültige Klarwerk-Sicherung.",
+    "en": "This file is not a valid Klarwerk backup."
+  },
+  "Impressum & Datenschutz": {
+    "de": "Impressum & Datenschutz",
+    "en": "Legal notice & privacy"
+  },
+  "Trage hier die für deinen Betrieb passenden Angaben ein. Sie werden im Footer verlinkt.": {
+    "de": "Trage hier die für deinen Betrieb passenden Angaben ein. Sie werden im Footer verlinkt.",
+    "en": "Enter the information applicable to your business. Links appear in the footer."
+  },
+  "Impressum": {
+    "de": "Impressum",
+    "en": "Legal notice"
+  },
+  "Datenschutz": {
+    "de": "Datenschutz",
+    "en": "Privacy"
+  },
+  "Datenschutzerklärung": {
+    "de": "Datenschutzerklärung",
+    "en": "Privacy policy"
+  },
+  "Veröffentlichte Versionen": {
+    "de": "Veröffentlichte Versionen",
+    "en": "Published versions"
+  },
+  "Die letzten 20 Stände bleiben erhalten.": {
+    "de": "Die letzten 20 Stände bleiben erhalten.",
+    "en": "The latest 20 versions are kept."
+  },
+  "Versionen laden": {
+    "de": "Versionen laden",
+    "en": "Load versions"
+  },
+  "Version als Entwurf wiederherstellen": {
+    "de": "Version als Entwurf wiederherstellen",
+    "en": "Restore version as draft"
+  },
+  "Diesen veröffentlichten Stand als Entwurf wiederherstellen?": {
+    "de": "Diesen veröffentlichten Stand als Entwurf wiederherstellen?",
+    "en": "Restore this published version as a draft?"
+  },
+  "Version als Entwurf wiederhergestellt.": {
+    "de": "Version als Entwurf wiederhergestellt.",
+    "en": "Version restored as a draft."
+  },
+  "Passwort ändern": {
+    "de": "Passwort ändern",
+    "en": "Change password"
+  },
+  "Passwort geändert. Andere Sitzungen wurden abgemeldet.": {
+    "de": "Passwort geändert. Andere Sitzungen wurden abgemeldet.",
+    "en": "Password changed. Other sessions have been signed out."
+  },
+  "Bisheriges Passwort": {
+    "de": "Bisheriges Passwort",
+    "en": "Current password"
+  },
+  "Neues Passwort (mind. 12 Zeichen)": {
+    "de": "Neues Passwort (mind. 12 Zeichen)",
+    "en": "New password (at least 12 characters)"
+  },
+  "Passwort speichern": {
+    "de": "Passwort speichern",
+    "en": "Save password"
+  },
+  "Abmelden": {
+    "de": "Abmelden",
+    "en": "Sign out"
+  },
+  "Zum Editor springen": {
+    "de": "Zum Editor springen",
+    "en": "Skip to editor"
+  },
+  "Meine Website": {
+    "de": "Meine Website",
+    "en": "My website"
+  },
+  "Zurück zum Editor": {
+    "de": "Zurück zum Editor",
+    "en": "Back to editor"
+  },
+  "Vorschau": {
+    "de": "Vorschau",
+    "en": "Preview"
+  },
+  "Veröffentlicht …": {
+    "de": "Veröffentlicht …",
+    "en": "Publishing …"
+  },
+  "Veröffentlichen": {
+    "de": "Veröffentlichen",
+    "en": "Publish"
+  },
+  "Editor-Werkzeuge": {
+    "de": "Editor-Werkzeuge",
+    "en": "Editor tools"
+  },
+  "Kurze Hilfe": {
+    "de": "Kurze Hilfe",
+    "en": "Quick help"
+  },
+  "Werkzeuge einklappen": {
+    "de": "Werkzeuge einklappen",
+    "en": "Collapse tools"
+  },
+  "Du kannst nichts kaputtmachen.": {
+    "de": "Du kannst nichts kaputtmachen.",
+    "en": "You can always undo."
+  },
+  "Mit dem Zurück-Pfeil nimmst du Änderungen einfach wieder zurück.": {
+    "de": "Mit dem Zurück-Pfeil nimmst du Änderungen einfach wieder zurück.",
+    "en": "Use the undo arrow to revert changes."
+  },
+  "So sieht deine Website aus.": {
+    "de": "So sieht deine Website aus.",
+    "en": "This is how your website looks."
+  },
+  "Deine Website. Dein Anfang.": {
+    "de": "Deine Website. Dein Anfang.",
+    "en": "Your website. Your beginning."
+  },
+  "Entwurf": {
+    "de": "Entwurf",
+    "en": "Draft"
+  },
+  "Teste deinen Auftritt auf Desktop und Handy.": {
+    "de": "Teste deinen Auftritt auf Desktop und Handy.",
+    "en": "Check your website on desktop and mobile."
+  },
+  "Klicke ein Element an und mach es zu deinem.": {
+    "de": "Klicke ein Element an und mach es zu deinem.",
+    "en": "Click an element and make it your own."
+  },
+  "Vorschaugröße": {
+    "de": "Vorschaugröße",
+    "en": "Preview size"
+  },
+  "Desktop-Vorschau": {
+    "de": "Desktop-Vorschau",
+    "en": "Desktop preview"
+  },
+  "Handy-Vorschau": {
+    "de": "Handy-Vorschau",
+    "en": "Mobile preview"
+  },
+  "Rückgängig": {
+    "de": "Rückgängig",
+    "en": "Undo"
+  },
+  "Wiederholen": {
+    "de": "Wiederholen",
+    "en": "Redo"
+  },
+  "Elementeigenschaften umschalten": {
+    "de": "Elementeigenschaften umschalten",
+    "en": "Toggle element properties"
+  },
+  "In wenigen Schritten zu deinem Auftritt": {
+    "de": "In wenigen Schritten zu deinem Auftritt",
+    "en": "Your website in a few steps"
+  },
+  "Deine Vorlage ist bereit. Jetzt kommt deine persönliche Note.": {
+    "de": "Deine Vorlage ist bereit. Jetzt kommt deine persönliche Note.",
+    "en": "Your template is ready. Add your personal touch."
+  },
+  "von 3": {
+    "de": "von 3",
+    "en": "of 3"
+  },
+  "Erste Schritte anzeigen": {
+    "de": "Erste Schritte anzeigen",
+    "en": "Show getting started"
+  },
+  "Erneut speichern": {
+    "de": "Erneut speichern",
+    "en": "Save again"
+  },
+  "Fehlermeldung schließen": {
+    "de": "Fehlermeldung schließen",
+    "en": "Dismiss error"
+  },
+  "· Beispieladresse": {
+    "de": "· Beispieladresse",
+    "en": "· example address"
+  },
+  "Handy": {
+    "de": "Handy",
+    "en": "Mobile"
+  },
+  "Desktop": {
+    "de": "Desktop",
+    "en": "Desktop"
+  },
+  "Deine Besucher sehen nur die veröffentlichte Version.": {
+    "de": "Deine Besucher sehen nur die veröffentlichte Version.",
+    "en": "Visitors only see the published version."
+  },
+  "Handyvorschau · Positionen werden auf kleinen Displays gestapelt.": {
+    "de": "Handyvorschau · Positionen werden auf kleinen Displays gestapelt.",
+    "en": "Mobile preview · Elements stack on small screens."
+  },
+  "Anklicken zum Bearbeiten · Ziehen zum Verschieben": {
+    "de": "Anklicken zum Bearbeiten · Ziehen zum Verschieben",
+    "en": "Click to edit · Drag to move"
+  },
+  "Element bearbeiten": {
+    "de": "Element bearbeiten",
+    "en": "Edit element"
+  },
+  "Eigenschaften schließen": {
+    "de": "Eigenschaften schließen",
+    "en": "Close properties"
+  },
+  "Kleine Überschrift": {
+    "de": "Kleine Überschrift",
+    "en": "Eyebrow heading"
+  },
+  "Beschriftung": {
+    "de": "Beschriftung",
+    "en": "Label"
+  },
+  "Dein Text": {
+    "de": "Dein Text",
+    "en": "Your text"
+  },
+  "Änderungen siehst du sofort.": {
+    "de": "Änderungen siehst du sofort.",
+    "en": "Changes appear immediately."
+  },
+  "Der Text ist länger als sein Kasten und überdeckt sonst, was darunter steht.": {
+    "de": "Der Text ist länger als sein Kasten und überdeckt sonst, was darunter steht.",
+    "en": "The text is taller than its box and may overlap the content below."
+  },
+  "Kasten anpassen": {
+    "de": "Kasten anpassen",
+    "en": "Fit box"
+  },
+  "Eigenes Bild hochladen": {
+    "de": "Eigenes Bild hochladen",
+    "en": "Upload your image"
+  },
+  "PNG, JPG oder WebP bis 30 MB · GIF bis 8 MB": {
+    "de": "PNG, JPG oder WebP bis 30 MB · GIF bis 8 MB",
+    "en": "PNG, JPG or WebP up to 30 MB · GIF up to 8 MB"
+  },
+  "Bildbeschreibung": {
+    "de": "Bildbeschreibung",
+    "en": "Image description"
+  },
+  "Beschreibe kurz den Inhalt für Menschen, die das Bild nicht sehen können.": {
+    "de": "Beschreibe kurz den Inhalt für Menschen, die das Bild nicht sehen können.",
+    "en": "Briefly describe the image for people who cannot see it."
+  },
+  "Ziel des Buttons": {
+    "de": "Ziel des Buttons",
+    "en": "Button destination"
+  },
+  "HTTPS-Adresse, #kontakt, mailto: oder tel:": {
+    "de": "HTTPS-Adresse, #kontakt, mailto: oder tel:",
+    "en": "HTTPS address, #kontakt, mailto: or tel:"
+  },
+  "Dieser Startseiten-Button verwendet deinen Buchungslink aus „Anbindungen“.": {
+    "de": "Dieser Startseiten-Button verwendet deinen Buchungslink aus „Anbindungen“.",
+    "en": "This homepage button uses your booking link from Integrations."
+  },
+  "Schriftgröße": {
+    "de": "Schriftgröße",
+    "en": "Font size"
+  },
+  "Schriftgröße in Pixeln": {
+    "de": "Schriftgröße in Pixeln",
+    "en": "Font size in pixels"
+  },
+  "Position & Größe": {
+    "de": "Position & Größe",
+    "en": "Position & size"
+  },
+  "Auf einer 1200 px breiten Arbeitsfläche.": {
+    "de": "Auf einer 1200 px breiten Arbeitsfläche.",
+    "en": "On a 1200 px wide canvas."
+  },
+  "X · horizontal": {
+    "de": "X · horizontal",
+    "en": "X · horizontal"
+  },
+  "Y · vertikal": {
+    "de": "Y · vertikal",
+    "en": "Y · vertical"
+  },
+  "Breite": {
+    "de": "Breite",
+    "en": "Width"
+  },
+  "Höhe": {
+    "de": "Höhe",
+    "en": "Height"
+  },
+  "Element am Raster ausgerichtet.": {
+    "de": "Element am Raster ausgerichtet.",
+    "en": "Element aligned to the grid."
+  },
+  "Am Raster ausrichten": {
+    "de": "Am Raster ausrichten",
+    "en": "Align to grid"
+  },
+  "Einrasten aktiv": {
+    "de": "Einrasten aktiv",
+    "en": "Snapping enabled"
+  },
+  "Name des Abschnitts": {
+    "de": "Name des Abschnitts",
+    "en": "Section name"
+  },
+  "Duplizieren": {
+    "de": "Duplizieren",
+    "en": "Duplicate"
+  },
+  "Element löschen": {
+    "de": "Element löschen",
+    "en": "Delete element"
+  },
+  "Was möchtest du ändern?": {
+    "de": "Was möchtest du ändern?",
+    "en": "What would you like to change?"
+  },
+  "Klicke auf einen Text, ein Bild oder einen Button in deiner Website.": {
+    "de": "Klicke auf einen Text, ein Bild oder einen Button in deiner Website.",
+    "en": "Click text, an image, or a button on your website."
+  },
+  "Weniger ist oft mehr.": {
+    "de": "Weniger ist oft mehr.",
+    "en": "Less is often more."
+  },
+  "Ein klarer Text und ein gutes Bild sind ein wunderbarer Anfang.": {
+    "de": "Ein klarer Text und ein gutes Bild sind ein wunderbarer Anfang.",
+    "en": "Clear text and a good image make a wonderful start."
+  },
+  "Hinweis schließen": {
+    "de": "Hinweis schließen",
+    "en": "Dismiss notice"
+  },
+  "Ein guter Start für deinen Beruf.": {
+    "de": "Ein guter Start für deinen Beruf.",
+    "en": "A good start for your profession."
+  },
+  "Wähle eine Vorlage. Farben, Texte und Bilder kannst du danach frei anpassen.": {
+    "de": "Wähle eine Vorlage. Farben, Texte und Bilder kannst du danach frei anpassen.",
+    "en": "Choose a template. You can freely change its colors, text, and images afterwards."
+  },
+  "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?": {
+    "de": "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?",
+    "en": "This template replaces your current draft. You can undo the change. Continue?"
+  },
+  "Deine neue Vorlage ist bereit. Mach sie zu deiner.": {
+    "de": "Deine neue Vorlage ist bereit. Mach sie zu deiner.",
+    "en": "Your new template is ready. Make it your own."
+  },
+  "Vorlage verwenden": {
+    "de": "Vorlage verwenden",
+    "en": "Use template"
+  },
+  "Deine Website in drei Schritten.": {
+    "de": "Deine Website in drei Schritten.",
+    "en": "Your website in three steps."
+  },
+  "Die Vorlage ist dein Anfang. Du machst den Rest persönlich.": {
+    "de": "Die Vorlage ist dein Anfang. Du machst den Rest persönlich.",
+    "en": "The template is your starting point. Make the rest personal."
+  },
+  "Mach sie zu deiner.": {
+    "de": "Mach sie zu deiner.",
+    "en": "Make it your own."
+  },
+  "Unter „Inhalte“ wählst du deinen Beruf und änderst deinen Namen. Klicke Texte oder Bilder direkt in der Vorschau an.": {
+    "de": "Unter „Inhalte“ wählst du deinen Beruf und änderst deinen Namen. Klicke Texte oder Bilder direkt in der Vorschau an.",
+    "en": "Choose your profession and change your name under Content. Click text or images directly in the preview."
+  },
+  "Gib ihr deinen Stil.": {
+    "de": "Gib ihr deinen Stil.",
+    "en": "Give it your style."
+  },
+  "Sechs Farben und deine Schrift findest du unter „Design“. Ziehe Elemente an ihren Platz. Das Raster hilft beim Ausrichten.": {
+    "de": "Sechs Farben und deine Schrift findest du unter „Design“. Ziehe Elemente an ihren Platz. Das Raster hilft beim Ausrichten.",
+    "en": "Find your six colors and font under Design. Drag elements into place. The grid helps with alignment."
+  },
+  "Bereit für deine Besucher.": {
+    "de": "Bereit für deine Besucher.",
+    "en": "Ready for visitors."
+  },
+  "Ergänze Kontakt und Anbieterlinks. Prüfe die Handyvorschau und klicke auf „Veröffentlichen“.": {
+    "de": "Ergänze Kontakt und Anbieterlinks. Prüfe die Handyvorschau und klicke auf „Veröffentlichen“.",
+    "en": "Add contact details and provider links. Check the mobile preview and click Publish."
+  },
+  "speichern": {
+    "de": "speichern",
+    "en": "save"
+  },
+  "rückgängig": {
+    "de": "rückgängig",
+    "en": "undo"
+  },
+  "Element verschieben": {
+    "de": "Element verschieben",
+    "en": "move element"
+  },
+  "Los geht’s": {
+    "de": "Los geht’s",
+    "en": "Let's start"
+  },
+  "Deine Änderungen veröffentlichen.": {
+    "de": "Deine Änderungen veröffentlichen.",
+    "en": "Publish your changes."
+  },
+  "Dein Auftritt kann beginnen.": {
+    "de": "Dein Auftritt kann beginnen.",
+    "en": "Your website is ready to go live."
+  },
+  "Dein gespeicherter Entwurf wird zur sichtbaren Website. Die bisherige Version bleibt als Sicherung erhalten.": {
+    "de": "Dein gespeicherter Entwurf wird zur sichtbaren Website. Die bisherige Version bleibt als Sicherung erhalten.",
+    "en": "Your saved draft becomes the public website. The previous version is kept as a backup."
+  },
+  "Desktop- und Handyansicht sind verfügbar.": {
+    "de": "Desktop- und Handyansicht sind verfügbar.",
+    "en": "Desktop and mobile layouts are available."
+  },
+  "Kontaktdaten sind hinterlegt.": {
+    "de": "Kontaktdaten sind hinterlegt.",
+    "en": "Contact details are provided."
+  },
+  "Kontaktdaten sind noch nicht ergänzt.": {
+    "de": "Kontaktdaten sind noch nicht ergänzt.",
+    "en": "Contact details have not been added yet."
+  },
+  "Impressum und Datenschutz sind hinterlegt.": {
+    "de": "Impressum und Datenschutz sind hinterlegt.",
+    "en": "Legal notice and privacy policy are provided."
+  },
+  "Impressum oder Datenschutz fehlen noch. Ohne beides geht die Website nicht online (Einstellungen → Impressum & Datenschutz).": {
+    "de": "Impressum oder Datenschutz fehlen noch. Ohne beides geht die Website nicht online (Einstellungen → Impressum & Datenschutz).",
+    "en": "Legal notice or privacy policy is missing. Both are required before publishing (Settings → Legal notice & privacy)."
+  },
+  "Jetzt veröffentlichen": {
+    "de": "Jetzt veröffentlichen",
+    "en": "Publish now"
+  },
+  "Veröffentlichte Website öffnen": {
+    "de": "Veröffentlichte Website öffnen",
+    "en": "Open published website"
+  },
+  "Veröffentlicht auf diesem Server. Für deine eigene Domain siehe README.": {
+    "de": "Veröffentlicht auf diesem Server. Für deine eigene Domain siehe README.",
+    "en": "Published on this server. See README for your own domain."
+  },
+  "Leistungen": {
+    "de": "Leistungen",
+    "en": "Services"
+  },
+  "Kontakt": {
+    "de": "Kontakt",
+    "en": "Contact"
+  },
+  "Bitte ein Bild bis {limit} MB auswählen.": {
+    "de": "Bitte ein Bild bis {limit} MB auswählen.",
+    "en": "Choose an image up to {limit} MB."
+  },
+  "{count} öffentliche Repositories importiert.": {
+    "de": "{count} öffentliche Repositories importiert.",
+    "en": "Imported {count} public repositories."
+  },
+  "In Texten setzt {placeholder} diesen Namen ein.": {
+    "de": "In Texten setzt {placeholder} diesen Namen ein.",
+    "en": "In text, {placeholder} inserts this name."
+  },
+  "{placeholder} wird zu „{name}“.": {
+    "de": "{placeholder} wird zu „{name}“.",
+    "en": "{placeholder} becomes “{name}”."
+  },
+  "{label} nach oben": {
+    "de": "{label} nach oben",
+    "en": "Move {label} up"
+  },
+  "Sprache": {
+    "de": "Sprache",
+    "en": "Language"
+  },
+  "Sprache der Website": {
+    "de": "Sprache der Website",
+    "en": "Website language"
+  },
+  "Übersetzungstexte werden aus SQLite geladen.": {
+    "de": "Übersetzungstexte werden aus SQLite geladen.",
+    "en": "Interface translations are loaded from SQLite."
+  },
+  "Psychiatrie": {
+    "de": "Psychiatrie",
+    "en": "Psychiatry"
+  },
+  "Arztpraxis": {
+    "de": "Arztpraxis",
+    "en": "Medical practice"
+  },
+  "Rechtsanwaltskanzlei": {
+    "de": "Rechtsanwaltskanzlei",
+    "en": "Law firm"
+  },
+  "Softwareentwicklung": {
+    "de": "Softwareentwicklung",
+    "en": "Software development"
+  },
+  "Psychotherapie": {
+    "de": "Psychotherapie",
+    "en": "Psychotherapy"
+  },
+  "Physiotherapie": {
+    "de": "Physiotherapie",
+    "en": "Physiotherapy"
+  },
+  "Steuerberatung": {
+    "de": "Steuerberatung",
+    "en": "Tax consulting"
+  },
+  "Architektur": {
+    "de": "Architektur",
+    "en": "Architecture"
+  },
+  "Coaching": {
+    "de": "Coaching",
+    "en": "Coaching"
+  },
+  "Handwerk": {
+    "de": "Handwerk",
+    "en": "Trades"
+  },
+  "Gesundheit": {
+    "de": "Gesundheit",
+    "en": "Healthcare"
+  },
+  "Beratung": {
+    "de": "Beratung",
+    "en": "Consulting"
+  },
+  "Technologie": {
+    "de": "Technologie",
+    "en": "Technology"
+  },
+  "Wirtschaft": {
+    "de": "Wirtschaft",
+    "en": "Business"
+  },
+  "Gestaltung": {
+    "de": "Gestaltung",
+    "en": "Design"
+  },
+  "Recht": {
+    "de": "Recht",
+    "en": "Legal"
+  },
+  "Salbei": {
+    "de": "Salbei",
+    "en": "Sage"
+  },
+  "Ozean": {
+    "de": "Ozean",
+    "en": "Ocean"
+  },
+  "Terrakotta": {
+    "de": "Terrakotta",
+    "en": "Terracotta"
+  },
+  "Tinte": {
+    "de": "Tinte",
+    "en": "Ink"
+  },
+  "Hauptfarbe": {
+    "de": "Hauptfarbe",
+    "en": "Primary color"
+  },
+  "Akzent": {
+    "de": "Akzent",
+    "en": "Accent"
+  },
+  "Hintergrund": {
+    "de": "Hintergrund",
+    "en": "Background"
+  },
+  "Flächen": {
+    "de": "Flächen",
+    "en": "Surfaces"
+  },
+  "Dezenter Text": {
+    "de": "Dezenter Text",
+    "en": "Muted text"
+  },
+  "Klar & vertraut": {
+    "de": "Klar & vertraut",
+    "en": "Clear & familiar"
+  },
+  "Ruhig & persönlich": {
+    "de": "Ruhig & persönlich",
+    "en": "Calm & personal"
+  },
+  "Humanistisch": {
+    "de": "Humanistisch",
+    "en": "Humanist"
+  },
+  "Offen & freundlich": {
+    "de": "Offen & freundlich",
+    "en": "Open & friendly"
+  },
+  "Klassisch": {
+    "de": "Klassisch",
+    "en": "Classic"
+  },
+  "Zeitlos & seriös": {
+    "de": "Zeitlos & seriös",
+    "en": "Timeless & professional"
+  },
+  "Passt zu deinem Gerät": {
+    "de": "Passt zu deinem Gerät",
+    "en": "Matches your device"
+  },
+  "Technisch & direkt": {
+    "de": "Technisch & direkt",
+    "en": "Technical & direct"
+  },
+  "Zum Inhalt springen": {
+    "de": "Zum Inhalt springen",
+    "en": "Skip to content"
+  },
+  "Webseiten-Navigation": {
+    "de": "Webseiten-Navigation",
+    "en": "Website navigation"
+  },
+  "Kontakt aufnehmen": {
+    "de": "Kontakt aufnehmen",
+    "en": "Get in touch"
+  },
+  "Die Angaben werden vom Betreiber dieser Website ergänzt.": {
+    "de": "Die Angaben werden vom Betreiber dieser Website ergänzt.",
+    "en": "This information will be provided by the website owner."
+  },
+  "Zur Startseite": {
+    "de": "Zur Startseite",
+    "en": "Back to home"
+  },
+  "Individuell. Persönlich. Mit einem Blick für das Ganze.": {
+    "de": "Individuell. Persönlich. Mit einem Blick für das Ganze.",
+    "en": "Individual. Personal. With the bigger picture in mind."
+  },
+  "Kontakt zu {service}": {
+    "de": "Kontakt zu {service}",
+    "en": "Contact about {service}"
+  },
+  "Open-Source-Projekt auf GitHub": {
+    "de": "Open-Source-Projekt auf GitHub",
+    "en": "Open-source project on GitHub"
+  },
+  "DER ERSTE SCHRITT IST OFT EIN GESPRÄCH.": {
+    "de": "DER ERSTE SCHRITT IST OFT EIN GESPRÄCH.",
+    "en": "THE FIRST STEP IS OFTEN A CONVERSATION."
+  },
+  "Lernen wir uns kennen.": {
+    "de": "Lernen wir uns kennen.",
+    "en": "Let's get to know each other."
+  },
+  "Lass uns kennenlernen.": {
+    "de": "Lass uns kennenlernen.",
+    "en": "Let's get to know each other."
+  },
+  "Termin vereinbaren": {
+    "de": "Termin vereinbaren",
+    "en": "Book an appointment"
+  },
+  "Deine Kontaktdaten ergänzt du unter „Inhalte“.": {
+    "de": "Deine Kontaktdaten ergänzt du unter „Inhalte“.",
+    "en": "Add your contact details under Content."
+  },
+  "Mit Klarwerk gestaltet": {
+    "de": "Mit Klarwerk gestaltet",
+    "en": "Built with Klarwerk"
+  },
+  "Bild auswählen": {
+    "de": "Bild auswählen",
+    "en": "Choose image"
+  },
+  "{label} bearbeiten": {
+    "de": "{label} bearbeiten",
+    "en": "Edit {label}"
+  },
+  "Wobei wir {you} unterstützen": {
+    "de": "Wobei wir {you} unterstützen",
+    "en": "How we can help {you}"
+  },
+  "Wobei ich {you} unterstütze": {
+    "de": "Wobei ich {you} unterstütze",
+    "en": "How I can help {you}"
+  },
+  "So können wir für {you} da sein.": {
+    "de": "So können wir für {you} da sein.",
+    "en": "How we can be there for {you}."
+  },
+  "So kann ich für {you} da sein.": {
+    "de": "So kann ich für {you} da sein.",
+    "en": "How I can be there for {you}."
+  },
+  "Ein Blick in {my} Projekte.": {
+    "de": "Ein Blick in {my} Projekte.",
+    "en": "A look at {my} projects."
+  },
+  "Wir freuen uns auf {your} Nachricht.": {
+    "de": "Wir freuen uns auf {your} Nachricht.",
+    "en": "We look forward to hearing from {your}."
+  },
+  "Ich freue mich auf {your} Nachricht.": {
+    "de": "Ich freue mich auf {your} Nachricht.",
+    "en": "I look forward to hearing from {your}."
+  },
+  "Anfrage von dieser Website ist nicht erlaubt.": {
+    "de": "Anfrage von dieser Website ist nicht erlaubt.",
+    "en": "Requests from this website are not allowed."
+  },
+  "Bitte zuerst anmelden.": {
+    "de": "Bitte zuerst anmelden.",
+    "en": "Please sign in first."
+  },
+  "Zu viele Anmeldeversuche. Bitte in 15 Minuten erneut versuchen.": {
+    "de": "Zu viele Anmeldeversuche. Bitte in 15 Minuten erneut versuchen.",
+    "en": "Too many sign-in attempts. Please try again in 15 minutes."
+  },
+  "Der Adminzugang wurde bereits eingerichtet.": {
+    "de": "Der Adminzugang wurde bereits eingerichtet.",
+    "en": "The admin account has already been set up."
+  },
+  "Der Einrichtungscode stimmt nicht. Er steht in der Konsole, in der der Server läuft.": {
+    "de": "Der Einrichtungscode stimmt nicht. Er steht in der Konsole, in der der Server läuft.",
+    "en": "The setup code is incorrect. It is shown in the server console."
+  },
+  "Benutzername oder Passwort stimmt nicht.": {
+    "de": "Benutzername oder Passwort stimmt nicht.",
+    "en": "Incorrect username or password."
+  },
+  "Diese Website wurde noch nicht veröffentlicht.": {
+    "de": "Diese Website wurde noch nicht veröffentlicht.",
+    "en": "This website has not been published yet."
+  },
+  "Der Entwurf wurde in einem anderen Fenster geändert. Bitte sichere deine Änderungen als JSON und lade die aktuelle Version neu.": {
+    "de": "Der Entwurf wurde in einem anderen Fenster geändert. Bitte sichere deine Änderungen als JSON und lade die aktuelle Version neu.",
+    "en": "The draft changed in another window. Export your changes as JSON and reload the current version."
+  },
+  "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).": {
+    "de": "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).",
+    "en": "Complete the legal notice and privacy policy first (Settings → Legal notice & privacy)."
+  },
+  "Version nicht gefunden.": {
+    "de": "Version nicht gefunden.",
+    "en": "Version not found."
+  },
+  "Das bisherige Passwort stimmt nicht.": {
+    "de": "Das bisherige Passwort stimmt nicht.",
+    "en": "The current password is incorrect."
+  },
+  "Bitte PNG, JPEG, WebP oder GIF auswählen.": {
+    "de": "Bitte PNG, JPEG, WebP oder GIF auswählen.",
+    "en": "Please choose a PNG, JPEG, WebP, or GIF image."
+  },
+  "Das Bild darf höchstens 8 MB groß sein.": {
+    "de": "Das Bild darf höchstens 8 MB groß sein.",
+    "en": "The image must not exceed 8 MB."
+  },
+  "Die Datei enthält kein gültiges Bild dieses Typs.": {
+    "de": "Die Datei enthält kein gültiges Bild dieses Typs.",
+    "en": "The file does not contain a valid image of this type."
+  },
+  "Die Berufssoftware muss zuerst auf dem Server eingerichtet werden (BUSINESS_API_URL).": {
+    "de": "Die Berufssoftware muss zuerst auf dem Server eingerichtet werden (BUSINESS_API_URL).",
+    "en": "Configure the business software on the server first (BUSINESS_API_URL)."
+  },
+  "Die Berufssoftware benötigt eine HTTPS-Adresse.": {
+    "de": "Die Berufssoftware benötigt eine HTTPS-Adresse.",
+    "en": "The business software requires an HTTPS address."
+  },
+  "Die Berufssoftware ist nicht erreichbar oder hat den Zugang abgelehnt.": {
+    "de": "Die Berufssoftware ist nicht erreichbar oder hat den Zugang abgelehnt.",
+    "en": "The business software is unavailable or denied access."
+  },
+  "LinkedIn-Zugang zuerst in der Serverumgebung einrichten.": {
+    "de": "LinkedIn-Zugang zuerst in der Serverumgebung einrichten.",
+    "en": "Configure LinkedIn access in the server environment first."
+  },
+  "Die LinkedIn-Anmeldung ist abgelaufen. Bitte erneut starten.": {
+    "de": "Die LinkedIn-Anmeldung ist abgelaufen. Bitte erneut starten.",
+    "en": "The LinkedIn sign-in expired. Please start again."
+  },
+  "LinkedIn hat die Anmeldung nicht bestätigt.": {
+    "de": "LinkedIn hat die Anmeldung nicht bestätigt.",
+    "en": "LinkedIn did not confirm the sign-in."
+  },
+  "LinkedIn konnte die Anmeldung nicht abschließen.": {
+    "de": "LinkedIn konnte die Anmeldung nicht abschließen.",
+    "en": "LinkedIn could not complete the sign-in."
+  },
+  "LinkedIn konnte das Profil nicht liefern.": {
+    "de": "LinkedIn konnte das Profil nicht liefern.",
+    "en": "LinkedIn could not provide the profile."
+  },
+  "Ungültige Anfrage.": {
+    "de": "Ungültige Anfrage.",
+    "en": "Invalid request."
+  },
+  "Die Datei ist zu groß.": {
+    "de": "Die Datei ist zu groß.",
+    "en": "The file is too large."
+  },
+  "Die Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.": {
+    "de": "Die Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.",
+    "en": "The action could not be completed. Please try again."
+  },
+  "Der Server ist nicht erreichbar. Bitte starte npm run dev und versuche es erneut.": {
+    "de": "Der Server ist nicht erreichbar. Bitte starte npm run dev und versuche es erneut.",
+    "en": "The server is unavailable. Start npm run dev and try again."
+  },
+  "Die Anfrage ist fehlgeschlagen.": {
+    "de": "Die Anfrage ist fehlgeschlagen.",
+    "en": "The request failed."
+  },
+  "Bitte einen gültigen GitHub-Benutzernamen eingeben.": {
+    "de": "Bitte einen gültigen GitHub-Benutzernamen eingeben.",
+    "en": "Please enter a valid GitHub username."
+  },
+  "GitHub-Benutzer nicht gefunden.": {
+    "de": "GitHub-Benutzer nicht gefunden.",
+    "en": "GitHub user not found."
+  },
+  "GitHub-Anfragelimit erreicht. Bitte später erneut versuchen.": {
+    "de": "GitHub-Anfragelimit erreicht. Bitte später erneut versuchen.",
+    "en": "GitHub rate limit reached. Please try again later."
+  },
+  "GitHub ist gerade nicht erreichbar.": {
+    "de": "GitHub ist gerade nicht erreichbar.",
+    "en": "GitHub is currently unavailable."
+  },
+  "Unerwartete GitHub-Antwort.": {
+    "de": "Unerwartete GitHub-Antwort.",
+    "en": "Unexpected GitHub response."
+  },
+  "Mehr als 10.000 Repositories. Bitte ein kleineres GitHub-Profil verwenden.": {
+    "de": "Mehr als 10.000 Repositories. Bitte ein kleineres GitHub-Profil verwenden.",
+    "en": "More than 10,000 repositories. Please use a smaller GitHub profile."
+  },
+  "Bitte HTTPS-Link, E-Mail, Telefonnummer oder Abschnitt wählen.": {
+    "de": "Bitte HTTPS-Link, E-Mail, Telefonnummer oder Abschnitt wählen.",
+    "en": "Choose an HTTPS link, email, phone number, or section."
+  },
+  "Ungültige Bildadresse": {
+    "de": "Ungültige Bildadresse",
+    "en": "Invalid image address"
+  },
+  "Nicht unterstützte Sprache.": {
+    "de": "Nicht unterstützte Sprache.",
+    "en": "Unsupported language."
+  },
+  "Recht & Finanzen": {
+    "de": "Recht & Finanzen",
+    "en": "Legal & finance"
+  },
+  "Digital & Kreativ": {
+    "de": "Digital & Kreativ",
+    "en": "Digital & creative"
+  },
+  "Coaching & Beratung": {
+    "de": "Coaching & Beratung",
+    "en": "Coaching & consulting"
+  },
+  "Handwerk & Service": {
+    "de": "Handwerk & Service",
+    "en": "Trades & services"
+  },
+  "Modern": {
+    "de": "Modern",
+    "en": "Modern"
+  },
+  "Editorial": {
+    "de": "Editorial",
+    "en": "Editorial"
+  },
+  "System": {
+    "de": "System",
+    "en": "System"
+  },
+  "Code": {
+    "de": "Code",
+    "en": "Code"
+  },
+  "Ungültiger Wert.": {
+    "de": "Ungültiger Wert.",
+    "en": "Invalid value."
+  },
+  "Ungültiges Format.": {
+    "de": "Ungültiges Format.",
+    "en": "Invalid format."
+  },
+  "Der Wert ist zu klein (Minimum: {minimum}).": {
+    "de": "Der Wert ist zu klein (Minimum: {minimum}).",
+    "en": "The value is too small (minimum: {minimum})."
+  },
+  "Der Wert ist zu groß (Maximum: {maximum}).": {
+    "de": "Der Wert ist zu groß (Maximum: {maximum}).",
+    "en": "The value is too large (maximum: {maximum})."
+  },
+  "Bitte ändere zuerst dein Startpasswort.": {
+    "de": "Bitte ändere zuerst dein Startpasswort.",
+    "en": "Please change your initial password first."
+  },
+  "Wähle ein eigenes Passwort, bevor du den Editor verwendest.": {
+    "de": "Wähle ein eigenes Passwort, bevor du den Editor verwendest.",
+    "en": "Choose your own password before using the editor."
+  },
+  "Passwort wiederholen": {
+    "de": "Passwort wiederholen",
+    "en": "Repeat password"
+  },
+  "Die Passwörter stimmen nicht überein.": {
+    "de": "Die Passwörter stimmen nicht überein.",
+    "en": "The passwords do not match."
+  },
+  "Bitte ein anderes Passwort als bisher wählen.": {
+    "de": "Bitte ein anderes Passwort als bisher wählen.",
+    "en": "Choose a different password from your current one."
+  },
+  "Passwort speichern und fortfahren": {
+    "de": "Passwort speichern und fortfahren",
+    "en": "Save password and continue"
+  }
+}

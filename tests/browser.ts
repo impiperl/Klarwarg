@@ -1,0 +1,396 @@
+import { chromium } from "playwright";
+import { createApp } from "../server/app.ts";
+import { createAdmin } from "../server/admin.ts";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import assert from "node:assert/strict";
+
+const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-browser-"));
+const { app, store } = await createApp(dir, {
+  staticDir: path.resolve("dist"),
+  request: (async (url: any, options: any) => {
+    if (String(url).startsWith("https://api.github.com/"))
+      return new Response(
+        JSON.stringify([
+          {
+            id: 1,
+            name: "mein-projekt",
+            html_url: "https://github.com/octocat/Hello-World",
+            description: "Mein öffentliches Projekt",
+            language: "TypeScript",
+            stargazers_count: 7,
+            fork: false,
+            private: false,
+            disabled: false,
+          },
+        ]),
+        { status: 200 },
+      );
+    return fetch(url, options);
+  }) as typeof fetch,
+});
+createAdmin(store, { username: "admin", password: "test123" });
+const server = app.listen(0, "127.0.0.1");
+await new Promise<void>((resolve) => server.once("listening", resolve));
+const address = server.address();
+assert.ok(address && typeof address !== "string");
+const base = `http://127.0.0.1:${address.port}`;
+const browser = await chromium.launch({
+  headless: true,
+  executablePath: process.env.CHROME_BIN || "/bin/google-chrome",
+  args: ["--no-sandbox"],
+});
+const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+const errors: string[] = [];
+page.on("pageerror", (e) => errors.push(e.message));
+mkdirSync("test-results", { recursive: true });
+try {
+  await page.goto(base + "/admin");
+  await page.getByTestId("language-switch").selectOption("en");
+  await page.getByRole("heading", { name: "Good to see you." }).waitFor();
+  await page.locator('.wordmark img[src="/images/klarwerk.png"]').waitFor();
+  await page.reload();
+  await page.getByRole("heading", { name: "Good to see you." }).waitFor();
+  assert.equal(await page.locator("html").getAttribute("lang"), "en");
+  await page.getByLabel("Username", { exact: true }).fill("admin");
+  await page.getByLabel("Password", { exact: true }).fill("wrong");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Incorrect username or password." })
+    .waitFor();
+  await page.getByTestId("language-switch").selectOption("de");
+  await page.getByLabel("Benutzername", { exact: true }).fill("admin");
+  await page.getByLabel("Passwort", { exact: true }).fill("test123");
+  await page.getByRole("button", { name: "Anmelden", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Bitte ändere zuerst dein Startpasswort." })
+    .waitFor();
+  assert.equal((await page.request.get(base + "/api/draft")).status(), 403);
+  await page.getByTestId("language-switch").selectOption("en");
+  await page
+    .getByRole("heading", {
+      name: "Please change your initial password first.",
+    })
+    .waitFor();
+  await page.getByTestId("language-switch").selectOption("de");
+  await page.getByLabel("Bisheriges Passwort", { exact: true }).fill("test123");
+  await page
+    .getByLabel("Neues Passwort (mind. 12 Zeichen)", { exact: true })
+    .fill("browser-new-password-123");
+  await page
+    .getByLabel("Passwort wiederholen", { exact: true })
+    .fill("browser-other-password-123");
+  await page
+    .getByRole("button", { name: "Passwort speichern und fortfahren" })
+    .click();
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Die Passwörter stimmen nicht überein." })
+    .waitFor();
+  await page
+    .getByLabel("Passwort wiederholen", { exact: true })
+    .fill("browser-new-password-123");
+  await page
+    .getByRole("button", { name: "Passwort speichern und fortfahren" })
+    .click();
+
+  await page
+    .getByRole("heading", { name: "Deine Website. Dein Anfang." })
+    .waitFor();
+  const originalDraft = await (
+    await page.request.get(base + "/api/draft")
+  ).json();
+  await page.getByTestId("language-switch").selectOption("en");
+  await page
+    .getByRole("heading", { name: "Your website. Your beginning." })
+    .waitFor();
+  for (const name of [
+    "Design",
+    "Grid",
+    "Integrations",
+    "Settings",
+    "Content",
+  ]) {
+    await page
+      .getByRole("navigation", { name: "Editor tools" })
+      .getByRole("button", { name, exact: true })
+      .click();
+  }
+  assert.equal(await page.locator("html").getAttribute("lang"), "en");
+  assert.deepEqual(
+    (await (await page.request.get(base + "/api/draft")).json()).site,
+    originalDraft.site,
+  );
+  await page.screenshot({
+    path: "test-results/editor-english.png",
+    fullPage: true,
+  });
+  await page.getByTestId("language-switch").selectOption("de");
+  await page
+    .getByRole("heading", { name: "Deine Website. Dein Anfang." })
+    .waitFor();
+  await page.screenshot({
+    path: "test-results/editor-desktop.png",
+    fullPage: true,
+  });
+  // Eine frische Vorlage hat keinen Text, der über seinen Kasten läuft.
+  assert.equal(await page.locator(".is-overflowing").count(), 0);
+  assert.equal(
+    Math.round((await page.locator(".builder").boundingBox())!.width),
+    1600,
+  );
+  await page
+    .getByRole("button", { name: "Header & Navigation", exact: true })
+    .click();
+  await page
+    .getByLabel("Name / Unternehmen", { exact: true })
+    .fill("Dr. Anna Sommer");
+  await page.getByLabel("E-Mail", { exact: true }).fill("praxis@example.test");
+  await page.getByRole("button", { name: "Raster", exact: true }).click();
+  await page
+    .getByLabel("Eigene Spaltenanzahl (1–24)", { exact: true })
+    .fill("6");
+  await page.getByLabel("Raster einblenden", { exact: false }).check();
+  assert.equal(await page.locator(".grid-overlay span").count(), 12);
+  await page.getByLabel("Raster einblenden", { exact: false }).uncheck();
+  await page.locator("#block-text").fill("Hallo Welt.\nMeine eigene Website.");
+  await page.getByLabel("X · horizontal").fill("96");
+  await page.waitForTimeout(1400);
+  let response = await page.request.get(base + "/api/draft");
+  let data = await response.json();
+  assert.equal(
+    data.site.sections[0].blocks.find((b: any) => b.kind === "heading").x,
+    96,
+  );
+  assert.match(
+    data.site.sections[0].blocks.find((b: any) => b.kind === "heading").text,
+    /Hallo Welt/,
+  );
+  const target = page.locator(".site-block.is-selected");
+  const initial = await target.boundingBox();
+  assert.ok(initial);
+  await page.mouse.move(initial.x + 30, initial.y + 30);
+  await page.mouse.down();
+  await page.mouse.move(initial.x + 90, initial.y + 60, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(1400);
+  response = await page.request.get(base + "/api/draft");
+  data = await response.json();
+  assert.ok(
+    data.site.sections[0].blocks.find((b: any) => b.kind === "heading").x > 96,
+  );
+  // Anrede: Die Vorlage siezt. Umschalten nimmt die unveränderten Vorlagentexte mit.
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  const canvas = page.locator(".site-surface");
+  await canvas.getByText("Schön, dass Sie da sind.", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Du", exact: true }).click();
+  await canvas.getByText("Gut, dass du da bist.", { exact: true }).waitFor();
+  await canvas.getByText("So kann ich für dich da sein.").waitFor();
+  await page.getByRole("button", { name: "Wir", exact: true }).click();
+  await canvas.getByText("So können wir für dich da sein.").waitFor();
+  await page.getByRole("button", { name: "Ich", exact: true }).click();
+  await page.getByRole("button", { name: "Sie", exact: true }).click();
+  await canvas.getByText("So kann ich für Sie da sein.").waitFor();
+  // Der Hinweis an die Betreiber im Abschnitt „Über mich“ duzt und wird gefunden.
+  await page.getByText("In einem Text steht noch „du“.").waitFor();
+  await page.getByRole("button", { name: "Zeigen", exact: true }).click();
+  assert.match(
+    await page.locator("#block-text").inputValue(),
+    /^Willkommen bei \{name\}\./,
+  );
+  await page.getByText("{name} wird zu „Dr. Anna Sommer“.").waitFor();
+  await canvas.getByText(/^Willkommen bei Dr\. Anna Sommer\./).waitFor();
+  // Zu langer Text: Warnung, und „Kasten anpassen“ macht ihn passend.
+  await page
+    .locator("#block-text")
+    .fill(
+      "Willkommen bei {name}. " +
+        "Ich nehme mir Zeit für Ihre Fragen. ".repeat(14),
+    );
+  await page
+    .locator(".site-block.is-overflowing, .overflow-warning")
+    .first()
+    .waitFor();
+  await page.screenshot({ path: "test-results/editor-overflow.png" });
+  await page
+    .getByRole("button", { name: "Kasten anpassen", exact: true })
+    .click();
+  await page.locator(".overflow-warning").waitFor({ state: "detached" });
+  await page.getByText(/steht noch „du“/).waitFor({ state: "detached" });
+  await page.getByRole("button", { name: "Design", exact: true }).click();
+  await page.getByRole("button", { name: "Ozean", exact: true }).click();
+  await page.getByRole("button", { name: "Aa Modern Klar & vertraut" }).click();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  await page.getByLabel("GitHub-Benutzername", { exact: true }).fill("octocat");
+  await page.getByRole("button", { name: "Repositories importieren" }).click();
+  await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
+  await page.locator(".block-image").first().click();
+  const png = await page.evaluate(async () => {
+    const img = new Image();
+    img.src = "/images/studio.svg";
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = 800;
+    canvas.height = 940;
+    canvas.getContext("2d")!.drawImage(img, 0, 0);
+    return canvas.toDataURL("image/png").split(",")[1];
+  });
+  await page
+    .locator(
+      'input[type="file"][accept="image/png,image/jpeg,image/webp,image/gif"]',
+    )
+    .setInputFiles({
+      name: "testbild.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(png, "base64"),
+    });
+  await page.waitForFunction(() =>
+    document
+      .querySelector<HTMLImageElement>(".block-image img")
+      ?.getAttribute("src")
+      ?.startsWith("/uploads/"),
+  );
+  await page
+    .getByLabel("Bildbeschreibung", { exact: true })
+    .fill("Ein hochgeladenes Testbild");
+  await page.locator(".block-heading").first().click();
+  await page
+    .getByRole("button", { name: "Einstellungen", exact: true })
+    .click();
+  await page.getByText("Impressum & Datenschutz", { exact: true }).click();
+  await page
+    .getByLabel("Impressum", { exact: true })
+    .fill("Dr. Anna Sommer\nMusterweg 1, 1010 Wien");
+  await page
+    .getByLabel("Datenschutzerklärung", { exact: true })
+    .fill("Diese Website setzt keine Cookies.");
+  await page.waitForTimeout(1400);
+  await page
+    .getByRole("button", { name: "Veröffentlichen", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Jetzt veröffentlichen" }).click();
+  await page
+    .getByText("Deine Website ist veröffentlicht.", { exact: true })
+    .waitFor();
+  const live = await browser.newPage({
+    viewport: { width: 1440, height: 1000 },
+  });
+  await live.goto(base);
+  const logo = live.locator('.klarwerk-badge img[alt="Klarwerk"]');
+  await logo.waitFor();
+  assert.ok(
+    await logo.evaluate(
+      (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
+    ),
+  );
+  const badge = await live.locator(".klarwerk-badge").boundingBox();
+  assert.ok(
+    badge && badge.x <= 16 && badge.y + badge.height >= 980,
+    "Brand mark is in the bottom-left corner",
+  );
+  assert.equal(
+    Math.round((await live.locator(".public-site").boundingBox())!.width),
+    1440,
+  );
+  await live
+    .getByRole("heading", { name: "Hallo Welt. Meine eigene Website." })
+    .waitFor();
+  await live.getByRole("heading", { name: "mein-projekt" }).waitFor();
+  assert.equal(await live.locator(".can-edit").count(), 0);
+  // Die öffentliche Seite kommt fertig vom Server und braucht kein JavaScript.
+  assert.equal(
+    await live.locator("script:not([type='application/ld+json'])").count(),
+    0,
+  );
+  assert.equal(await live.evaluate(() => document.documentElement.lang), "de");
+  await live.screenshot({
+    path: "test-results/website-desktop.png",
+    fullPage: true,
+  });
+  const publishedName = await live.locator("h1").innerText();
+  await page.locator("#block-text").fill("Nur im Entwurf");
+  await page.waitForTimeout(1400);
+  await live.reload();
+  assert.equal(await live.locator("h1").innerText(), publishedName);
+  await live.getByRole("link", { name: "Impressum", exact: true }).click();
+  await live.getByRole("heading", { name: "Impressum", exact: true }).waitFor();
+  await live.getByText("Musterweg 1, 1010 Wien").waitFor();
+  await live.screenshot({
+    path: "test-results/website-impressum.png",
+    fullPage: true,
+  });
+  await live.goto(base);
+  await live.setViewportSize({ width: 390, height: 844 });
+  await live.locator(".site-canvas.canvas-mobile").first().waitFor();
+  assert.equal(await live.locator("h1").count(), 1);
+  await live.mouse.wheel(0, 800);
+  await live.waitForTimeout(200);
+  assert.ok(
+    await live.evaluate(() => window.scrollY > 0),
+    "Die öffentliche Website muss scrollbar sein.",
+  );
+  await live.evaluate(() => window.scrollTo(0, 0));
+  await live.screenshot({
+    path: "test-results/website-mobile.png",
+    fullPage: true,
+  });
+  assert.ok(
+    await live.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  );
+  await page
+    .getByRole("button", { name: "Handy-Vorschau", exact: true })
+    .click();
+  await page.screenshot({
+    path: "test-results/editor-phone-preview.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page
+    .getByRole("heading", { name: "Deine Website. Dein Anfang." })
+    .waitFor();
+  await page.getByTestId("language-switch").selectOption("en");
+  for (const control of [
+    page.getByTestId("language-switch"),
+    page.getByRole("button", { name: "Preview", exact: true }),
+    page.getByRole("button", { name: "Publish", exact: true }),
+  ]) {
+    const box = await control.boundingBox();
+    assert.ok(
+      box && box.x >= 0 && box.x + box.width <= 390,
+      "Mobile header control must fit on screen",
+    );
+  }
+  await page.screenshot({
+    path: "test-results/editor-mobile-english.png",
+    fullPage: true,
+  });
+  await page.getByTestId("language-switch").selectOption("de");
+  await page.screenshot({
+    path: "test-results/editor-mobile.png",
+    fullPage: true,
+  });
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  );
+  await page.getByRole("button", { name: "Kurze Hilfe", exact: true }).click();
+  await page.getByRole("dialog").waitFor();
+  await page.keyboard.press("Escape");
+  assert.equal(await page.getByRole("dialog").count(), 0);
+  await live.close();
+  assert.deepEqual(errors, []);
+  console.log(
+    "Browserprüfung erfolgreich: SQLite-Erstanmeldung, Pflicht-Passwortwechsel, DE/EN-Umschalter und Sprachspeicherung, Text, Koordinaten, Drag, Palette, Schrift, GitHub, Veröffentlichung, Entwurf/Live, Handy, Dialog.",
+  );
+} finally {
+  await browser.close();
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+  store.close();
+  rmSync(dir, { recursive: true, force: true });
+}

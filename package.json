@@ -1,0 +1,46 @@
+{
+  "name": "klarwerk",
+  "version": "0.1.0",
+  "description": "A website builder for independent professionals with an integrated admin area and local SQLite storage.",
+  "private": true,
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n API,EXPO \"tsx watch server/index.ts\" \"expo start --web --port 8091\"",
+    "start": "tsx server/index.ts",
+    "admin:create": "tsx server/create-admin.ts",
+    "web": "expo start --web --port 8091",
+    "build": "expo export --platform web",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:browser": "tsx tests/browser.ts",
+    "format": "prettier --write src server tests"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~56.0.0",
+    "expo": "~56.0.0",
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "~0.85.3",
+    "react-native-web": "^0.21.2",
+    "sql.js": "^1.13.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "~19.2.4",
+    "@types/react-dom": "~19.2.3",
+    "@types/sql.js": "^1.4.9",
+    "concurrently": "^9.2.0",
+    "playwright": "^1.60.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20.19.4"
+  }
+}
