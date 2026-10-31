@@ -1526,5 +1526,37 @@
   "Passwort speichern und fortfahren": {
     "de": "Passwort speichern und fortfahren",
     "en": "Save password and continue"
+  },
+  "Abbrechen": {
+    "de": "Abbrechen",
+    "en": "Cancel"
+  },
+  "Entwurf ersetzen": {
+    "de": "Entwurf ersetzen",
+    "en": "Replace draft"
+  },
+  "Bildform": {
+    "de": "Bildform",
+    "en": "Image shape"
+  },
+  "Rechteck": {
+    "de": "Rechteck",
+    "en": "Rectangle"
+  },
+  "Abgerundet": {
+    "de": "Abgerundet",
+    "en": "Rounded"
+  },
+  "Bogen": {
+    "de": "Bogen",
+    "en": "Arch"
+  },
+  "Oval": {
+    "de": "Oval",
+    "en": "Oval"
+  },
+  "Kreis": {
+    "de": "Kreis",
+    "en": "Circle"
   }
 }

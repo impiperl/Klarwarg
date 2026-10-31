@@ -264,6 +264,9 @@ function Canvas({
               key={block.id}
               className={`site-block block-${block.kind} ${editing ? "can-edit" : ""} ${active ? "is-selected" : ""} ${editing && !small && overflowing?.[block.id] ? "is-overflowing" : ""}`}
               data-block={editing ? block.id : undefined}
+              data-image-shape={
+                block.kind === "image" ? block.imageShape : undefined
+              }
               style={style}
               onPointerDown={(e) => down(e, block)}
               onPointerMove={move}

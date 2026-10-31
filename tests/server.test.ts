@@ -19,6 +19,29 @@ test("Berufsvorlagen und Koordinaten sind gültig; aktive Inhalte werden abgewie
   for (const career of careers)
     assert.equal(siteSchema.parse(createSite(career.id)).profession, career.id);
   const site = createSite();
+  const image = site.sections
+    .flatMap((section) => section.blocks)
+    .find((block) => block.kind === "image")!;
+  assert.equal(image.imageShape, "arch");
+  const { imageShape, ...legacyImage } = image;
+  const legacySite = {
+    ...site,
+    sections: [{ ...site.sections[0], blocks: [legacyImage] }],
+  };
+  assert.equal(
+    siteSchema.parse(legacySite).sections[0].blocks[0].imageShape,
+    "arch",
+  );
+  assert.equal(
+    siteSchema.safeParse({
+      ...site,
+      sections: [
+        { ...site.sections[0], blocks: [{ ...image, imageShape: "unknown" }] },
+      ],
+    }).success,
+    false,
+  );
+
   assert.deepEqual(
     snapBlock({ ...site.sections[0].blocks[0], x: 43, y: 29, w: 440 }, site),
     { ...site.sections[0].blocks[0], x: 0, y: 32, w: 440 },

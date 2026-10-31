@@ -223,10 +223,68 @@ try {
   await page.getByRole("button", { name: "Ozean", exact: true }).click();
   await page.getByRole("button", { name: "Aa Modern Klar & vertraut" }).click();
   await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
-  await page.getByLabel("GitHub-Benutzername", { exact: true }).fill("octocat");
-  await page.getByRole("button", { name: "Repositories importieren" }).click();
-  await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
+  assert.equal(
+    await page.getByLabel("GitHub-Benutzername", { exact: true }).count(),
+    0,
+  );
+  assert.ok(
+    await page
+      .getByLabel("Dein Anbieter")
+      .locator('option[value="doctena"]')
+      .count(),
+  );
+  assert.equal(
+    await page
+      .getByLabel("Dein Anbieter")
+      .locator('option[value="ra-micro"]')
+      .count(),
+    0,
+  );
+  await page
+    .getByLabel("Öffentlicher Buchungs- oder Portallink")
+    .fill("https://example.test/booking");
+  await page
+    .getByLabel("Dein öffentliches LinkedIn-Profil")
+    .fill("https://www.linkedin.com/in/test");
   await page.locator(".block-image").first().click();
+  const image = page.locator(".block-image").first();
+  for (const shape of ["rectangle", "rounded", "arch", "oval", "circle"]) {
+    await page.getByLabel("Bildform", { exact: true }).selectOption(shape);
+    assert.equal(await image.getAttribute("data-image-shape"), shape);
+    if (shape === "rectangle")
+      assert.equal(
+        await image.evaluate((el) => getComputedStyle(el).borderRadius),
+        "0px",
+      );
+    if (shape === "rounded")
+      assert.equal(
+        await image.evaluate((el) => getComputedStyle(el).borderRadius),
+        "24px",
+      );
+    if (shape === "oval")
+      assert.equal(
+        await image.evaluate((el) => getComputedStyle(el).borderRadius),
+        "50%",
+      );
+    if (shape === "circle")
+      assert.equal(
+        await image
+          .locator("img")
+          .evaluate((el) => getComputedStyle(el).clipPath),
+        "circle()",
+      );
+  }
+  await page.getByRole("button", { name: "Rückgängig", exact: true }).click();
+  assert.equal(await image.getAttribute("data-image-shape"), "oval");
+  await page.getByRole("button", { name: "Wiederholen", exact: true }).click();
+  assert.equal(await image.getAttribute("data-image-shape"), "circle");
+  await image.click();
+  await page.getByTestId("language-switch").selectOption("en");
+  assert.equal(
+    await page.getByLabel("Image shape", { exact: true }).inputValue(),
+    "circle",
+  );
+  await page.getByTestId("language-switch").selectOption("de");
   const png = await page.evaluate(async () => {
     const img = new Image();
     img.src = "/images/studio.svg";
@@ -297,8 +355,18 @@ try {
   await live
     .getByRole("heading", { name: "Hallo Welt. Meine eigene Website." })
     .waitFor();
-  await live.getByRole("heading", { name: "mein-projekt" }).waitFor();
   assert.equal(await live.locator(".can-edit").count(), 0);
+  assert.equal(
+    await live.locator(".block-image").first().getAttribute("data-image-shape"),
+    "circle",
+  );
+  assert.equal(
+    await live
+      .locator(".block-image img")
+      .first()
+      .evaluate((el) => getComputedStyle(el).clipPath),
+    "circle()",
+  );
   // Die öffentliche Seite kommt fertig vom Server und braucht kein JavaScript.
   assert.equal(
     await live.locator("script:not([type='application/ld+json'])").count(),
@@ -383,6 +451,182 @@ try {
   await page.getByRole("dialog").waitFor();
   await page.keyboard.press("Escape");
   assert.equal(await page.getByRole("dialog").count(), 0);
+  // HTTP LAN browsers expose getRandomValues but not randomUUID (localhost does).
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis.crypto, "randomUUID", {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  // Selecting a profession must visibly mark it before replacing the saved draft.
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.reload();
+  await page
+    .locator('.block-image[data-image-shape="circle"]')
+    .first()
+    .waitFor();
+  await page.locator(".template-choice").click();
+  const draftBeforeTemplate = await (
+    await page.request.get(base + "/api/draft")
+  ).json();
+  const developer = page
+    .locator(".template-card")
+    .filter({ hasText: "Softwareentwicklung" });
+  await developer.click();
+  assert.equal(await developer.getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator(".template-card.chosen").count(), 1);
+  assert.equal(await developer.locator(".template-check").count(), 1);
+  assert.deepEqual(
+    await (await page.request.get(base + "/api/draft")).json(),
+    draftBeforeTemplate,
+  );
+  const savedTemplate = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/draft") &&
+      response.request().method() === "PUT" &&
+      response.status() === 200,
+  );
+  await page
+    .getByRole("button", { name: "Entwurf ersetzen", exact: true })
+    .click();
+  await savedTemplate;
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site
+      .profession,
+    "developer",
+  );
+  await page.reload();
+  await page
+    .locator(".project-badge")
+    .filter({ hasText: "Softwareentwicklung" })
+    .waitFor();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  assert.equal(
+    await page
+      .getByLabel("Öffentlicher Buchungs- oder Portallink")
+      .inputValue(),
+    "",
+  );
+  assert.equal(
+    await page.getByLabel("Dein öffentliches LinkedIn-Profil").inputValue(),
+    "",
+  );
+  assert.equal(
+    await page
+      .getByLabel("Dein Anbieter")
+      .locator('option[value="doctena"]')
+      .count(),
+    0,
+  );
+  await page.getByLabel("GitHub-Benutzername", { exact: true }).fill("octocat");
+  await page.getByRole("button", { name: "Repositories importieren" }).click();
+  await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  await page.locator(".template-choice").click();
+  await page
+    .locator(".template-card")
+    .filter({ hasText: "Rechtsanwaltskanzlei" })
+    .click();
+  await page.getByRole("button", { name: "Abbrechen", exact: true }).click();
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site
+      .profession,
+    "developer",
+  );
+  await page.route("**/api/draft", async (route) => {
+    if (route.request().method() === "PUT")
+      await route.fulfill({
+        status: 503,
+        json: { error: "Speichern fehlgeschlagen" },
+      });
+    else await route.continue();
+  });
+  await page.locator(".template-choice").click();
+  await page
+    .locator(".template-card")
+    .filter({ hasText: "Rechtsanwaltskanzlei" })
+    .click();
+  await page
+    .getByRole("button", { name: "Entwurf ersetzen", exact: true })
+    .click();
+  await page.getByRole("dialog").getByRole("alert").waitFor();
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site
+      .profession,
+    "developer",
+  );
+  await page
+    .locator(".project-badge")
+    .filter({ hasText: "Softwareentwicklung" })
+    .waitFor();
+  await page.getByRole("button", { name: "Abbrechen", exact: true }).click();
+  await page.unroute("**/api/draft");
+  // An import started for the previous profession must not repopulate the new draft.
+  let finishOldImport!: () => Promise<void>;
+  const oldImportStarted = new Promise<void>((resolve) => {
+    void page.route("**/api/github", (route) => {
+      finishOldImport = () =>
+        route.fulfill({
+          json: {
+            repos: [
+              {
+                id: 99,
+                name: "stale-project",
+                description: "Old import",
+                url: "https://github.com/octocat/stale",
+                language: "TypeScript",
+                stars: 0,
+                fork: false,
+              },
+            ],
+          },
+        });
+      resolve();
+    });
+  });
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  await page.getByRole("button", { name: "Repositories importieren" }).click();
+  await oldImportStarted;
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  // A completed career switch clears configured links/projects and changes available tools.
+  await page.locator(".template-choice").click();
+  await page
+    .locator(".template-card")
+    .filter({ hasText: "Rechtsanwaltskanzlei" })
+    .click();
+  await page
+    .getByRole("button", { name: "Entwurf ersetzen", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  assert.equal(
+    await page.getByLabel("GitHub-Benutzername", { exact: true }).count(),
+    0,
+  );
+  assert.equal(await page.getByLabel("Dein Anbieter").inputValue(), "ra-micro");
+  assert.equal(
+    await page
+      .getByLabel("Dein Anbieter")
+      .locator('option[value="doctena"]')
+      .count(),
+    0,
+  );
+  await finishOldImport();
+  await page.waitForTimeout(1200);
+  const lawDraft = (await (await page.request.get(base + "/api/draft")).json())
+    .site;
+  assert.deepEqual(lawDraft.repos, []);
+  assert.equal(lawDraft.integrations.githubUser, "");
+  assert.equal(lawDraft.integrations.bookingUrl, "");
+  assert.equal(lawDraft.integrations.linkedinUrl, "");
+  await page.reload();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  assert.equal(
+    await page.getByLabel("GitHub-Benutzername", { exact: true }).count(),
+    0,
+  );
+  assert.equal(await page.getByLabel("Dein Anbieter").inputValue(), "ra-micro");
   await live.close();
   assert.deepEqual(errors, []);
   console.log(

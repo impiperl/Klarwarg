@@ -72,6 +72,7 @@ import {
   createBlock,
   createSite,
   fonts,
+  imageShapes,
   namePlaceholder,
   otherAddress,
   palettes,
@@ -631,6 +632,9 @@ function Builder({ onLogout }: { onLogout: () => void }) {
   const [mobile, setMobile] = useState(() => window.innerWidth <= 760),
     [preview, setPreview] = useState(false),
     [templates, setTemplates] = useState(false),
+    [templateChoice, setTemplateChoice] = useState<string | null>(null),
+    [templateBusy, setTemplateBusy] = useState(false),
+    [templateError, setTemplateError] = useState(""),
     [help, setHelp] = useState(false),
     [publishedAt, setPublishedAt] = useState<string | null>(null),
     [publishing, setPublishing] = useState(false),
@@ -661,6 +665,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     saved = useRef(""),
     queue = useRef(Promise.resolve()),
     conflict = useRef(false),
+    integrationGeneration = useRef(0),
     undo = useRef<Site[]>([]),
     redo = useRef<Site[]>([]),
     dragStart = useRef<Site | null>(null),
@@ -831,6 +836,56 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     queue.current = job;
     return job;
   }, []);
+  function openTemplates() {
+    setTemplateChoice(null);
+    setTemplateError("");
+    setTemplates(true);
+  }
+  function closeTemplates() {
+    if (templateBusy) return;
+    setTemplates(false);
+    setTemplateChoice(null);
+    setTemplateError("");
+  }
+  async function applyTemplate() {
+    if (!templateChoice || templateBusy || !draft.current) return;
+    const previous = draft.current;
+    setTemplateBusy(true);
+    setTemplateError("");
+    try {
+      const next = createSite(templateChoice);
+      integrationGeneration.current += 1;
+      dragStart.current = null;
+      change(next, false);
+      // Queue the replacement behind pending saves and acknowledge it only after SQLite accepted it.
+      await save();
+      undo.current = [...undo.current.slice(-59), previous];
+      redo.current = [];
+      setHistoryCount([undo.current.length, 0]);
+      setSelected({
+        section: next.sections[0].id,
+        block: next.sections[0].blocks.find(
+          (block) => block.kind === "heading",
+        )!.id,
+      });
+      setSectionId(next.sections[0].id);
+      setOverflow({});
+      setTemplates(false);
+      setTemplateChoice(null);
+      setNotice("Deine neue Vorlage ist bereit. Mach sie zu deiner.");
+    } catch (error) {
+      // A rejected save must not pretend the new profession is the persisted draft.
+      change(previous, false);
+      setStatus(
+        JSON.stringify(previous) === saved.current
+          ? "Gespeichert"
+          : "Änderungen offen",
+      );
+      setTemplateError((error as Error).message);
+    } finally {
+      setTemplateBusy(false);
+    }
+  }
   useEffect(() => {
     if (!site || dragStart.current || JSON.stringify(site) === saved.current)
       return;
@@ -953,11 +1008,17 @@ function Builder({ onLogout }: { onLogout: () => void }) {
   }
   async function syncGithub() {
     if (!draft.current) return;
+    const generation = integrationGeneration.current;
     setSyncing("github");
     setError("");
     try {
       const username = draft.current.integrations.githubUser;
       const data = await api("/github", { username });
+      if (
+        generation !== integrationGeneration.current ||
+        draft.current?.integrations.githubUser !== username
+      )
+        return;
       if (draft.current) change({ ...draft.current, repos: data.repos });
       setNotice(`${data.repos.length} öffentliche Repositories importiert.`);
     } catch (e) {
@@ -1027,6 +1088,49 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     !!site.contact.email || !!site.contact.phone,
     !!publishedAt,
   ].filter(Boolean).length;
+  const medicalCareer = [
+    "psychiatry",
+    "medicine",
+    "therapy",
+    "physio",
+  ].includes(site.profession);
+  const providerOptions = [
+    ["none", "Kein Anbieter"],
+    ...(medicalCareer
+      ? [
+          ["doctena", "Doctena"],
+          ["doctolib", "Doctolib"],
+          ["jameda", "jameda"],
+        ]
+      : []),
+    ...(site.profession === "law"
+      ? [
+          ["ra-micro", "RA-MICRO / Mandantenportal"],
+          ["advoware", "advoware / Mandantenportal"],
+        ]
+      : []),
+    ["calendly", "Calendly"],
+    ["custom", "Anderer Anbieter"],
+  ];
+  // Keep an explicitly configured provider editable when loading an older/custom draft.
+  if (!providerOptions.some(([id]) => id === site.integrations.provider)) {
+    const providerNames = {
+      doctena: "Doctena",
+      doctolib: "Doctolib",
+      jameda: "jameda",
+      "ra-micro": "RA-MICRO / Mandantenportal",
+      advoware: "advoware / Mandantenportal",
+    };
+    providerOptions.push([
+      site.integrations.provider,
+      providerNames[site.integrations.provider as keyof typeof providerNames] ||
+        site.integrations.provider,
+    ]);
+  }
+  const showGithub =
+    site.profession === "developer" ||
+    !!site.integrations.githubUser ||
+    site.repos.length > 0;
   const updateIntegrations = (p: Partial<Site["integrations"]>) =>
     patch({ integrations: { ...site.integrations, ...p } });
   function openDetails(id: string) {
@@ -1042,10 +1146,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
       <>
         <div className="panel-section">
           <span className="eyebrow">{t("DEIN AUSGANGSPUNKT")}</span>
-          <button
-            className="template-choice"
-            onClick={() => setTemplates(true)}
-          >
+          <button className="template-choice" onClick={openTemplates}>
             <span className="career-symbol">{currentCareer.symbol}</span>
             <span>
               <strong>{t(currentCareer.name)}</strong>
@@ -1643,16 +1744,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 })
               }
             >
-              {[
-                ["none", t("Kein Anbieter")],
-                ["doctena", "Doctena"],
-                ["doctolib", "Doctolib"],
-                ["jameda", "jameda"],
-                ["ra-micro", t("RA-MICRO / Mandantenportal")],
-                ["advoware", "advoware / Mandantenportal"],
-                ["calendly", "Calendly"],
-                ["custom", t("Anderer Anbieter")],
-              ].map(([id, label]) => (
+              {providerOptions.map(([id, label]) => (
                 <option key={id} value={id}>
                   {t(label)}
                 </option>
@@ -1692,57 +1784,59 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             )}
           </p>
         </div>
-        <div className="panel-section">
-          <div className="integration-title">
-            <Github size={21} />
-            <h3>{t("GitHub-Projekte")}</h3>
-            <span className="badge">API</span>
-          </div>
-          <Field
-            label={t("GitHub-Benutzername")}
-            hint={t(
-              "Alle öffentlichen eigenen Repositories werden importiert, auch über mehrere Seiten.",
-            )}
-          >
-            <input
-              value={site.integrations.githubUser}
-              placeholder="z. B. octocat"
-              maxLength={39}
-              onChange={(e) =>
-                updateIntegrations({ githubUser: e.target.value.trim() })
-              }
-            />
-          </Field>
-          <button
-            className="secondary full"
-            disabled={!site.integrations.githubUser || !!syncing}
-            onClick={syncGithub}
-          >
-            {syncing === "github" ? (
-              <LoaderCircle size={16} className="spin" />
-            ) : (
-              <RefreshCw size={16} />
-            )}
-            {t("Repositories importieren")}
-          </button>
-          {site.repos.length > 0 && (
-            <div className="inline-info">
-              <Check size={15} />
-              {site.repos.length}
-              {t(" Repositories importiert")}
+        {showGithub && (
+          <div className="panel-section">
+            <div className="integration-title">
+              <Github size={21} />
+              <h3>{t("GitHub-Projekte")}</h3>
+              <span className="badge">API</span>
             </div>
-          )}
-          <label className="toggle-row">
-            <span>{t("Projekte auf Website zeigen")}</span>
-            <input
-              type="checkbox"
-              checked={site.integrations.showRepos}
-              onChange={(e) =>
-                updateIntegrations({ showRepos: e.target.checked })
-              }
-            />
-          </label>
-        </div>
+            <Field
+              label={t("GitHub-Benutzername")}
+              hint={t(
+                "Alle öffentlichen eigenen Repositories werden importiert, auch über mehrere Seiten.",
+              )}
+            >
+              <input
+                value={site.integrations.githubUser}
+                placeholder="z. B. octocat"
+                maxLength={39}
+                onChange={(e) =>
+                  updateIntegrations({ githubUser: e.target.value.trim() })
+                }
+              />
+            </Field>
+            <button
+              className="secondary full"
+              disabled={!site.integrations.githubUser || !!syncing}
+              onClick={syncGithub}
+            >
+              {syncing === "github" ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <RefreshCw size={16} />
+              )}
+              {t("Repositories importieren")}
+            </button>
+            {site.repos.length > 0 && (
+              <div className="inline-info">
+                <Check size={15} />
+                {site.repos.length}
+                {t(" Repositories importiert")}
+              </div>
+            )}
+            <label className="toggle-row">
+              <span>{t("Projekte auf Website zeigen")}</span>
+              <input
+                type="checkbox"
+                checked={site.integrations.showRepos}
+                onChange={(e) =>
+                  updateIntegrations({ showRepos: e.target.checked })
+                }
+              />
+            </label>
+          </div>
+        )}
         <div className="panel-section">
           <div className="integration-title">
             <Linkedin size={21} />
@@ -1779,7 +1873,9 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 className="text-button"
                 onClick={async () => {
                   try {
+                    const generation = integrationGeneration.current;
                     const { profile } = await api("/linkedin/profile");
+                    if (generation !== integrationGeneration.current) return;
                     if (profile?.name) {
                       patch({ name: profile.name });
                       setNotice("Dein Name wurde aus LinkedIn übernommen.");
@@ -1817,9 +1913,11 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             className="secondary full"
             disabled={!integrationStatus.business || !!syncing}
             onClick={async () => {
+              const generation = integrationGeneration.current;
               setSyncing("business");
               try {
                 const data = await api("/business/import", {});
+                if (generation !== integrationGeneration.current) return;
                 if (draft.current) patch({ services: data.services });
                 setNotice("Leistungen aus der Berufssoftware importiert.");
               } catch (e) {
@@ -2479,6 +2577,23 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                         <p className="small muted">
                           {t("PNG, JPG oder WebP bis 30 MB · GIF bis 8 MB")}
                         </p>
+                        <Field label={t("Bildform")}>
+                          <select
+                            value={block.imageShape}
+                            onChange={(event) =>
+                              mutateBlock({
+                                imageShape: event.target
+                                  .value as Block["imageShape"],
+                              })
+                            }
+                          >
+                            {imageShapes.map((shape) => (
+                              <option key={shape.id} value={shape.id}>
+                                {t(shape.label)}
+                              </option>
+                            ))}
+                          </select>
+                        </Field>
                         <Field
                           label={t("Bildbeschreibung")}
                           hint={t(
@@ -2727,7 +2842,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         <Modal
           title={t("Ein guter Start für deinen Beruf.")}
           wide
-          onClose={() => setTemplates(false)}
+          onClose={closeTemplates}
         >
           <p className="modal-subtitle">
             {t(
@@ -2739,25 +2854,14 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               <button
                 key={c.id}
                 className={
-                  "template-card " + (site.profession === c.id ? "chosen" : "")
+                  "template-card " +
+                  ((templateChoice ?? site.profession) === c.id ? "chosen" : "")
                 }
+                aria-pressed={(templateChoice ?? site.profession) === c.id}
+                disabled={templateBusy}
                 onClick={() => {
-                  if (
-                    !window.confirm(
-                      t(
-                        "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?",
-                      ),
-                    )
-                  )
-                    return;
-                  const next = createSite(c.id);
-                  change(next);
-                  setSelected(null);
-                  setSectionId(next.sections[0].id);
-                  setTemplates(false);
-                  setNotice(
-                    "Deine neue Vorlage ist bereit. Mach sie zu deiner.",
-                  );
+                  setTemplateChoice(c.id);
+                  setTemplateError("");
                 }}
               >
                 <span className="career-symbol">{c.symbol}</span>
@@ -2767,12 +2871,49 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                   {t("Vorlage verwenden ")}
                   <ArrowRight size={14} />
                 </span>
-                {site.profession === c.id && (
+                {(templateChoice ?? site.profession) === c.id && (
                   <Check className="template-check" size={17} />
                 )}
               </button>
             ))}
           </div>
+
+          {templateChoice && (
+            <div className="template-confirmation">
+              <h2>
+                {t(
+                  careers.find((career) => career.id === templateChoice)!.name,
+                )}
+              </h2>
+              <p>
+                {t(
+                  "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?",
+                )}
+              </p>
+              {templateError && (
+                <p className="error-message" role="alert">
+                  {t(templateError)}
+                </p>
+              )}
+              <div className="template-confirmation-actions">
+                <button
+                  className="secondary"
+                  disabled={templateBusy}
+                  onClick={closeTemplates}
+                >
+                  {t("Abbrechen")}
+                </button>
+                <button
+                  className="primary"
+                  disabled={templateBusy}
+                  onClick={applyTemplate}
+                >
+                  {templateBusy && <LoaderCircle size={16} className="spin" />}
+                  {t(templateBusy ? "Wird gespeichert …" : "Entwurf ersetzen")}
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
       {help && (

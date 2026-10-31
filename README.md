@@ -194,6 +194,9 @@ independent translated versions of your website.
 The labels below use the German interface; switch to English using the language selector.
 
 1. Choose a profession under **Inhalte → Vorlage wechseln** (Content → Change template).
+   The selected card is marked immediately. Confirm with **Entwurf ersetzen** (Replace draft)
+   to replace and save the entire draft. Cancel keeps your current draft; the published
+   website stays unchanged until you publish again.
    Templates cover psychiatry, medical practices, law firms, software development,
    psychotherapy, physiotherapy, tax consulting, architecture, coaching, and trades.
    Under **Inhalte → Anrede**, choose formal or informal German and singular or team
@@ -249,7 +252,18 @@ reloading the current server version.
   SameSite=Lax, and expire after 12 hours. Mutations from untrusted origins are rejected, and
   login attempts are rate limited.
 
+Select an image in the editor and choose **Bildform** (Image shape): rectangle, rounded,
+arch, oval, or circle. Each image keeps its own shape in the saved draft and published
+website, including the mobile view. A circle uses a centered circular crop; an oval
+follows the image box dimensions. Existing images keep the original arch shape.
+
 ## Integrations
+
+The integration panel follows the selected profession: healthcare booking providers for
+healthcare templates, client portals for law firms, and GitHub projects for software
+development. LinkedIn and general booking links remain available across professions.
+Replacing a template clears configured links and imported repositories. Explicitly
+configured integrations in existing/custom drafts remain editable.
 
 ### GitHub: public repository import
 

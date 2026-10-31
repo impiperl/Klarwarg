@@ -100,12 +100,22 @@ const imageSrc = z
       /^https:\/\//i.test(v),
     "Ungültige Bildadresse",
   );
+export const imageShapes = [
+  { id: "rectangle", label: "Rechteck" },
+  { id: "rounded", label: "Abgerundet" },
+  { id: "arch", label: "Bogen" },
+  { id: "oval", label: "Oval" },
+  { id: "circle", label: "Kreis" },
+] as const;
 export const blockSchema = z.object({
   id: z.string().max(80),
   kind: z.enum(["eyebrow", "heading", "text", "image", "button"]),
   text: z.string().max(8000),
   src: imageSrc.default(""),
   alt: z.string().max(500).default(""),
+  imageShape: z
+    .enum(["rectangle", "rounded", "arch", "oval", "circle"])
+    .default("arch"),
   href: safeLink.default(""),
   x: z.number().min(0).max(1200),
   y: z.number().min(0).max(3000),
@@ -570,7 +580,16 @@ export const careers = [
   },
 ] as const;
 export function uid() {
-  return globalThis.crypto.randomUUID();
+  if (typeof globalThis.crypto.randomUUID === "function")
+    return globalThis.crypto.randomUUID();
+  // HTTP LAN origins lack randomUUID, but still provide secure random bytes.
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 export function createBlock(
   kind: Block["kind"],
@@ -591,6 +610,7 @@ export function createBlock(
     h: kind === "image" ? 320 : kind === "heading" ? 140 : 100,
     src: kind === "image" ? "/images/studio.svg" : "",
     alt: kind === "image" ? "Heller Raum mit Pflanzen" : "",
+    imageShape: "arch",
     href: kind === "button" ? "#kontakt" : "",
     fontSize: kind === "heading" ? 48 : 18,
     ...overrides,
