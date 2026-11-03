@@ -9,7 +9,7 @@ import { createAdmin } from "../server/admin.ts";
 import { createSite } from "../src/model.ts";
 
 test("SQLite-Admin: kurzer Erstlogin, Neustart, Passwortwechsel und kein Überschreiben", async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-admin-"));
+  const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-admin-"));
   const initial = await Store.open(dir);
   const site = createSite();
   site.name = "Vorhandener Entwurf";
@@ -129,7 +129,7 @@ test("SQLite-Admin: kurzer Erstlogin, Neustart, Passwortwechsel und kein Übersc
 
 test("Adminvorbelegung erzeugt einen unveröffentlichten Entwurf und zufällige Salze", async () => {
   const dirs = [0, 1].map(() =>
-    mkdtempSync(path.join(tmpdir(), "klarwerk-admin-seed-")),
+    mkdtempSync(path.join(tmpdir(), "klarwarg-admin-seed-")),
   );
   const stores = await Promise.all(dirs.map((dir) => Store.open(dir)));
   try {

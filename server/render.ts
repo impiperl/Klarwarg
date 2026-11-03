@@ -92,9 +92,12 @@ function structuredData(site: Site, origin: string) {
     description: describe(site),
     url: origin + "/",
   };
-  if (site.contact.email) data.email = site.contact.email;
-  if (site.contact.phone) data.telephone = site.contact.phone;
-  if (site.contact.address) data.address = oneLine(site.contact.address);
+  if (!site.hiddenSections.includes("contact") && site.contact.email)
+    data.email = site.contact.email;
+  if (!site.hiddenSections.includes("contact") && site.contact.phone)
+    data.telephone = site.contact.phone;
+  if (!site.hiddenSections.includes("contact") && site.contact.address)
+    data.address = oneLine(site.contact.address);
   if (image) data.image = image;
   if (site.integrations.linkedinUrl)
     data.sameAs = [site.integrations.linkedinUrl];
@@ -177,10 +180,10 @@ export function renderUnpublished(
         { className: "wordmark" },
         React.createElement(
           "span",
-          { className: "brand-mark klarwerk-mark" },
+          { className: "brand-mark klarwarg-mark" },
           React.createElement(BrandLogo, { size: 34 }),
         ),
-        "klarwerk.",
+        "klarwarg.",
       ),
       React.createElement(
         "div",
@@ -211,7 +214,7 @@ export function renderUnpublished(
     ),
   );
   return document(
-    `<title>Klarwerk</title>\n<meta name="robots" content="noindex">`,
+    `<title>Klarwarg</title>\n<meta name="robots" content="noindex">`,
     body,
     language,
   );

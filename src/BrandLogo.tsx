@@ -1,6 +1,6 @@
 import React from "react";
 
-export const klarwerkLogo = "/images/klarwerk.png";
+export const klarwargLogo = "/images/klarwarg.png";
 export default function BrandLogo({
   size = 32,
   label = "",
@@ -10,11 +10,11 @@ export default function BrandLogo({
 }) {
   return (
     <img
-      src={klarwerkLogo}
+      src={klarwargLogo}
       alt={label}
       width={size}
       height={size}
-      className="klarwerk-logo"
+      className="klarwarg-logo"
       decoding="async"
     />
   );

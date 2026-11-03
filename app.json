@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Klarwerk · Deine Website",
-    "slug": "klarwerk",
+    "name": "Klarwarg · Deine Website",
+    "slug": "klarwarg",
     "version": "0.1.0",
     "platforms": ["web"],
     "web": {
       "bundler": "metro",
       "output": "single",
-      "name": "Klarwerk",
+      "name": "Klarwarg",
       "description": "Eine eigene Website. Ganz einfach."
     }
   }

@@ -12,7 +12,7 @@ export async function githubRepos(
       {
         headers: {
           Accept: "application/vnd.github+json",
-          "User-Agent": "Klarwerk-Website-Builder",
+          "User-Agent": "Klarwarg-Website-Builder",
         },
         signal: AbortSignal.timeout(15000),
       },

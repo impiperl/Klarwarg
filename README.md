@@ -1,4 +1,4 @@
-# Klarwerk
+# Klarwarg
 
 A website builder for independent professionals, with an Expo web editor, an integrated
 admin area, and local SQLite storage. The editor supports German and English; this documentation is in English. Website
@@ -9,8 +9,8 @@ template content starts in German and remains editable.
 - Node.js meeting the `engines` requirement in `package.json` (currently at least
   20.19.4), plus npm.
 - A persistent directory for the SQLite database and uploaded images.
-- For public hosting: a domain, HTTPS, and a reverse proxy forwarding to Klarwerk.
-- Exactly one Klarwerk server process per data directory. A separate database server
+- For public hosting: a domain, HTTPS, and a reverse proxy forwarding to Klarwarg.
+- Exactly one Klarwarg server process per data directory. A separate database server
   is not required: SQLite runs through `sql.js` inside the application.
 
 Use `npm ci` to install the versions recorded in `package-lock.json`. Install development
@@ -42,16 +42,16 @@ This prevents an unrelated visitor from claiming the initial admin account.
 ## Create an admin account before starting the server
 
 The admin area is integrated at `/admin`. You can provision its account directly in
-SQLite before starting Klarwerk. Stop the server first: its SQLite state is held in
+SQLite before starting Klarwarg. Stop the server first: its SQLite state is held in
 memory while it runs.
 
 In Bash:
 
 ```bash
-read -r -s -p 'Initial password: ' klarwerk_admin_password
+read -r -s -p 'Initial password: ' klarwarg_admin_password
 printf '\n'
-printf '%s' "$klarwerk_admin_password" | npm run admin:create -- admin
-unset klarwerk_admin_password
+printf '%s' "$klarwarg_admin_password" | npm run admin:create -- admin
+unset klarwarg_admin_password
 ```
 
 The command stores a salted scrypt password hash in `data/klarwerk.sqlite`, or the
@@ -67,20 +67,45 @@ accounts without a rotation flag also complete this change once. To change it ag
 must have at least 12 characters. When migrating an existing database, use its existing
 account rather than running account provisioning again.
 
-## Run on another server
+## Run on a server (recommended)
+
+One script installs and operates Klarwarg on any Linux server with Docker or Podman. It
+builds a single small container (editor and bundled server), keeps the data in `data/`, and,
+if wanted, adds Caddy for automatic HTTPS. The step-by-step guide for beginners, in German, is
+[INSTALLATION.md](INSTALLATION.md).
+
+```bash
+git clone https://github.com/impiperl/klarwerk.git /srv/klarwarg
+cd /srv/klarwarg
+sudo ./klarwarg.sh install    # asks: own domain with automatic HTTPS / behind an existing proxy / LAN test
+sudo ./klarwarg.sh update     # pull, rebuild, back up data/, restart
+sudo ./klarwarg.sh backup     # backups/klarwarg-<timestamp>.tar.gz
+sudo ./klarwarg.sh status     # address, and the setup code while no admin exists
+```
+
+The installer does not create the admin account in the terminal; it prints the setup code,
+and the first visit to `/admin` creates the account. Settings live in the `.env` written by the
+installer (`KLARWARG_MODE`, `DOMAIN`, `PUBLIC_ORIGIN`, …); apply changes with
+`./klarwarg.sh restart`. Restoring a site: unpack a backup into `data/` before `install`.
+Only Docker or Podman is required; Compose is not.
+
+`npm run build:server` bundles the server into `server-build/` (esbuild; only `sql.js` stays
+external), which the container runs with plain `node`.
+
+## Manual installation without containers
 
 ### First installation
 
-1. Copy the project source to the server, for example to `/srv/klarwerk`. Include
+1. Copy the project source to the server, for example to `/srv/klarwarg`. Include
    `package.json`, `package-lock.json`, the Expo configuration and entry files, `src/`,
    `server/`, and `public/`. Do not copy `node_modules/`, `.expo/`, or test results.
    Include `tests/` if you want to run the verification commands there.
 2. Give a dedicated service user access to the project and a persistent data directory,
-   for example `/var/lib/klarwerk`. Run the application under that user.
+   for example `/var/lib/klarwarg`. Run the application under that user.
 3. Install dependencies and build the web editor:
 
    ```bash
-   cd /srv/klarwerk
+   cd /srv/klarwarg
    npm ci
    npm run typecheck
    npm test
@@ -90,7 +115,7 @@ account rather than running account provisioning again.
 4. Export the runtime configuration in the shell or set it in your service manager:
 
    ```bash
-   export DATA_DIR=/var/lib/klarwerk
+   export DATA_DIR=/var/lib/klarwarg
    export HOST=127.0.0.1
    export PORT=4317
    export PUBLIC_ORIGIN=https://your-domain.example
@@ -100,7 +125,7 @@ account rather than running account provisioning again.
 5. For a new website, provision an admin using the command above while these variables
    are set. For an existing website, restore its complete data directory instead, as
    described below.
-6. Start Klarwerk:
+6. Start Klarwarg:
 
    ```bash
    npm start
@@ -110,7 +135,7 @@ account rather than running account provisioning again.
    Preserve the public `Host` header and set `X-Forwarded-For` and `X-Forwarded-Proto`.
    Set your domain's DNS records to the server. The public website and `/admin` then
    share the same domain.
-8. Configure a service manager, such as systemd, to run `npm start` in `/srv/klarwerk`
+8. Configure a service manager, such as systemd, to run `npm start` in `/srv/klarwarg`
    with the same environment and service user, restart it on failure, and start it at
    boot. Stop the manually started instance before starting the managed service.
 
@@ -125,7 +150,7 @@ layout requires access beyond loopback. Register provider callbacks for the new 
 
 ### Move an existing website and admin account
 
-1. Stop Klarwerk on the old server. Its in-memory SQLite copy must not keep writing
+1. Stop Klarwarg on the old server. Its in-memory SQLite copy must not keep writing
    while you take the backup.
 2. Copy the **entire data directory** to the new server: `klarwerk.sqlite` **and**
    `uploads/`. A JSON export alone does not include the admin account, uploaded files,
@@ -135,7 +160,7 @@ layout requires access beyond loopback. Register provider callbacks for the new 
    `0700`.
 4. Complete the dependency installation, build, domain, and HTTPS configuration above.
    Update `PUBLIC_ORIGIN` and any provider callback URLs for the new domain.
-5. Start one Klarwerk process on the new server and log in at `/admin` with the existing
+5. Start one Klarwarg process on the new server and log in at `/admin` with the existing
    account. Check the editor, public pages, and images before completing the move.
 
 The database carries the admin password hash, drafts, published website, and version
@@ -150,24 +175,17 @@ SQLite file.
 
 ### Environment files
 
-See `.env.example` for available settings. The server inherits its environment;
-**it does not automatically load `.env`**. In Bash, load your own trusted file with:
-
-```bash
-set -a
-source .env
-set +a
-```
-
-For a persistent service, configure these values through its service manager.
+See `.env.example` for available settings. The server reads a `.env` file from its working
+directory at startup, if there is one. Variables already set in the environment (shell,
+container, service manager) take precedence over the file.
 `EXPO_PUBLIC_API_URL` is needed only if the frontend and API intentionally use different
 origins; Expo embeds this value into the frontend at build time. The default is to host
 everything on the same origin.
 
 ## Branding
 
-The supplied `public/images/klarwerk.png` is used on admin and login screens. Generated
-websites show a small Klarwerk mark in the lower-left corner, including on legal pages.
+The supplied `public/images/klarwarg.png` is used on admin and login screens. Generated
+websites show a small Klarwarg mark in the lower-left corner, including on legal pages.
 The website's own name, contact details, and visual identity remain editable.
 
 ## Interface languages
@@ -335,7 +353,7 @@ validates the response, and provides **Leistungen importieren** (Import services
 admin. Importing replaces the draft's service descriptions. The URL is configured only
 on the server; browsers cannot supply arbitrary endpoints or credentials. Do not send
 patient files, diagnoses, legal case files, or confidential records to this adapter.
-This is Klarwerk's adapter contract, not a claimed native provider API.
+This is Klarwarg's adapter contract, not a claimed native provider API.
 
 ## Public website and search engines
 
@@ -371,6 +389,47 @@ Backend tests use temporary databases. Browser tests require an installed Chrome
 are mocked in the browser test; backend tests cover pagination and errors. Screenshots
 are written to `test-results/`.
 
-Klarwerk is an **Expo web application**. Native iOS/Android editors are not implemented.
+Klarwarg is an **Expo web application**. Native iOS/Android editors are not implemented.
 Cloud hosting, domain registration, and provider accounts are not provisioned by the
-project. Publishing activates the site on the Klarwerk server you are running.
+project. Publishing activates the site on the Klarwarg server you are running.
+
+The product was renamed from Klarwerk to Klarwarg. Existing installations continue to use
+`klarwerk.sqlite`, the existing session cookie and language preference, and
+`KLARWERK_ADMIN_PASSWORD` for compatibility. Keep the existing data directory.
+
+## Domain and page sections in the admin
+
+Under **Settings → Own domain**, enter a domain such as `example.com` or
+`https://example.com`. It is stored with the draft, included in JSON backups,
+and becomes the canonical public origin when that draft is published. A profession/template
+change retains the domain. Published
+domain settings take precedence over `PUBLIC_ORIGIN` for canonical links, sitemap,
+robots and preview metadata. Clearing the field restores the environment/request fallback.
+This field does not configure DNS, nginx, HTTPS certificates or LinkedIn OAuth callbacks;
+configure those on the hosting server as described above. In particular, keep
+`PUBLIC_ORIGIN` configured for the active OAuth callback origin.
+
+Under **Content → Page sections**, remove a canvas section or a fixed services,
+projects or contact area using its remove button and confirmation dialog. All canvas
+sections may be removed; adding a new element then creates a section automatically.
+Changes affect the published site only after publishing and support Undo/Redo.
+Fixed areas retain their data and can be reinserted from the same list. Removing a
+canvas section deletes its blocks from the draft; Undo or restoring a published
+version can recover it. The header and legal footer remain available.
+
+## License
+
+Copyright (C) 2026 Iris Perl
+
+Klarwarg is free software: you can redistribute it and/or modify it under the terms of
+the GNU Affero General Public License as published by the Free Software Foundation,
+version 3 only. See [LICENSE](LICENSE).
+
+If you run a modified version of Klarwarg as a network service, the AGPL requires you to
+offer its users the corresponding source code (section 13).
+
+Klarwarg is distributed WITHOUT ANY WARRANTY. Its templates for the legal notice
+(Impressum) and privacy policy (Datenschutzerklärung) are not legal advice; check the
+texts for your own situation.
+
+The name "Klarwarg" and its logo are not covered by this license.

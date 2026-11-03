@@ -4,7 +4,7 @@ export default function App() {
   return (
     <View style={{ padding: 32 }}>
       <Text>
-        Klarwerk ist ein Expo-Webseiteneditor. Bitte im Browser mit npm run dev
+        Klarwarg ist ein Expo-Webseiteneditor. Bitte im Browser mit npm run dev
         öffnen.
       </Text>
     </View>

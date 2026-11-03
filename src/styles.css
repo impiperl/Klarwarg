@@ -1930,7 +1930,8 @@ input::placeholder {
   display: inline-flex;
   align-items: center;
 }
-.site-footer > div > span {
+.site-footer > div > span,
+.site-footer > div > a.klarwarg-credit {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2611,17 +2612,17 @@ input::placeholder {
   }
 }
 
-/* Original Klarwerk branding, with a small mark in the generated website's lower-left corner. */
-.klarwerk-logo {
+/* Original Klarwarg branding, with a small mark in the generated website's lower-left corner. */
+.klarwarg-logo {
   display: block;
   object-fit: contain;
   flex-shrink: 0;
 }
-.brand-mark.klarwerk-mark {
+.brand-mark.klarwarg-mark {
   background: transparent;
   border-radius: 0;
 }
-.klarwerk-auth-logo {
+.klarwarg-auth-logo {
   width: 64px;
   height: 64px;
   background: transparent;
@@ -2629,7 +2630,7 @@ input::placeholder {
 .site-surface {
   position: relative;
 }
-.klarwerk-badge {
+.klarwarg-badge {
   position: absolute;
   bottom: 12px;
   left: 12px;
@@ -2645,7 +2646,7 @@ input::placeholder {
   background: rgba(255, 255, 255, 0.94);
   pointer-events: none;
 }
-.public-site .klarwerk-badge {
+.public-site .klarwarg-badge {
   position: fixed;
 }
 

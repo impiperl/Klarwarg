@@ -84,6 +84,10 @@ import {
   type Voice,
 } from "./model";
 import "./styles.css";
+import { ZodError } from "zod";
+import { describeIssue, validationNotice } from "./validation";
+import { sourceUrl } from "./source";
+const FieldErrors = React.createContext<Record<string, string>>({});
 
 type Tab = "content" | "design" | "layout" | "integrations" | "settings";
 const tabs: { id: Tab; label: string; icon: typeof Layers }[] = [
@@ -142,18 +146,30 @@ function Field({
   label,
   children,
   hint,
+  path,
 }: {
+  path?: string;
   label: string;
   children: ReactNode;
   hint?: string;
 }) {
   const { t, language } = useI18n();
   const id = React.useId();
+  const errors = React.useContext(FieldErrors);
+  const error = path ? errors[path] : undefined;
   const labelChild = (node: ReactNode): ReactNode => {
     if (!React.isValidElement<{ id?: string; children?: ReactNode }>(node))
       return node;
     if (["input", "select", "textarea"].includes(String(node.type)))
-      return React.cloneElement(node, { id });
+      return React.cloneElement(node as React.ReactElement<any>, {
+        id,
+        "data-validation-path": path,
+        "aria-invalid": error ? true : undefined,
+        "aria-describedby":
+          [hint ? id + "-hint" : "", error ? id + "-error" : ""]
+            .filter(Boolean)
+            .join(" ") || undefined,
+      });
     return node.props.children
       ? React.cloneElement(
           node,
@@ -166,7 +182,12 @@ function Field({
     <div className="field">
       <label htmlFor={id}>{t(label)}</label>
       {labelChild(children)}
-      {hint && <small>{t(hint)}</small>}
+      {hint && <small id={id + "-hint"}>{t(hint)}</small>}
+      {error && (
+        <small id={id + "-error"} role="alert">
+          {error}
+        </small>
+      )}
     </div>
   );
 }
@@ -268,14 +289,14 @@ function Auth({
     <div className="auth-page">
       <LanguageSwitch className="auth-language-switch" />
       <a href="/" className="wordmark">
-        <span className="brand-mark klarwerk-mark">
+        <span className="brand-mark klarwarg-mark">
           <BrandLogo size={34} />
         </span>
-        klarwerk<span className="brand-dot">.</span>
+        klarwarg<span className="brand-dot">.</span>
       </a>
       <div className="auth-card">
-        <div className="auth-icon klarwerk-auth-logo">
-          <BrandLogo size={56} label="Klarwerk" />
+        <div className="auth-icon klarwarg-auth-logo">
+          <BrandLogo size={56} label="Klarwarg" />
         </div>
         <span className="eyebrow">{t("DEIN AUFTRITT BEGINNT HIER")}</span>
         <h1>{setup ? t("Ein guter Anfang.") : t("Schön, dass du da bist.")}</h1>
@@ -323,7 +344,7 @@ function Auth({
             <Field
               label={t("Einrichtungscode")}
               hint={t(
-                "Steht in der Konsole, in der der Klarwerk-Server läuft.",
+                "Steht in der Konsole, in der der Klarwarg-Server läuft.",
               )}
             >
               <input
@@ -372,7 +393,7 @@ function Auth({
   );
 }
 /**
- * Die öffentliche Website im Expo-Entwicklungsserver. Im Betrieb liefert der Klarwerk-Server sie
+ * Die öffentliche Website im Expo-Entwicklungsserver. Im Betrieb liefert der Klarwarg-Server sie
  * als fertiges HTML aus (`server/render.ts`); hier dient sie nur der Vorschau unter `npm run dev`.
  */
 function PublicSite() {
@@ -420,10 +441,10 @@ function PublicSite() {
     <div className="auth-page">
       <LanguageSwitch className="auth-language-switch" />
       <div className="wordmark">
-        <span className="brand-mark klarwerk-mark">
+        <span className="brand-mark klarwarg-mark">
           <BrandLogo size={34} />
         </span>
-        klarwerk.
+        klarwarg.
       </div>
       <div className="auth-card">
         <span className="eyebrow">
@@ -459,14 +480,14 @@ function Screen() {
     window.location.pathname.startsWith("/admin");
   useEffect(() => {
     if (isAdmin) {
-      document.title = t("Klarwerk · Deine Website gestalten");
+      document.title = t("Klarwarg · Deine Website gestalten");
       api("/auth")
         .then(setAuth)
         .catch((e) => setError(e.message));
     }
   }, [isAdmin]);
   useEffect(() => {
-    if (isAdmin) document.title = t("Klarwerk · Deine Website gestalten");
+    if (isAdmin) document.title = t("Klarwarg · Deine Website gestalten");
   }, [isAdmin, t]);
   if (!isAdmin) return <PublicSite />;
   if (error)
@@ -487,7 +508,7 @@ function Screen() {
       <div className="loading-page">
         <LanguageSwitch />
         <LoaderCircle className="spin" />
-        {t("Klarwerk wird geladen …")}
+        {t("Klarwarg wird geladen …")}
       </div>
     );
   if (!auth.authenticated)
@@ -534,8 +555,8 @@ function InitialPasswordChange({
     <div className="auth-page">
       <LanguageSwitch className="auth-language-switch" />
       <div className="auth-card">
-        <div className="auth-icon klarwerk-auth-logo">
-          <BrandLogo size={56} label="Klarwerk" />
+        <div className="auth-icon klarwarg-auth-logo">
+          <BrandLogo size={56} label="Klarwarg" />
         </div>
         <h1>{t("Bitte ändere zuerst dein Startpasswort.")}</h1>
         <p>
@@ -643,6 +664,35 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     [inspectorOpen, setInspectorOpen] = useState(
       () => window.innerWidth > 1050,
     );
+  const [removeTarget, setRemoveTarget] = useState<{
+    kind: "canvas" | "static";
+    id: string;
+    label: string;
+  } | null>(null);
+  const [focusRequest, setFocusRequest] = useState<{ field: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!focusRequest) return;
+    const frame = requestAnimationFrame(() => {
+      const field = focusRequest.field.startsWith("validation:")
+        ? document.querySelector<HTMLElement>(
+            `[data-validation-path="${focusRequest.field.slice(11)}"]`,
+          )
+        : document.querySelector<HTMLElement>(
+            `[data-editor-field="${focusRequest.field}"]`,
+          );
+      if (!field) return;
+      let parent = field.parentElement;
+      while (parent) {
+        if (parent instanceof HTMLDetailsElement) parent.open = true;
+        parent = parent.parentElement;
+      }
+      field.scrollIntoView({ block: "nearest", inline: "nearest" });
+      field.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusRequest]);
   const [historyCount, setHistoryCount] = useState([0, 0]),
     [stageWidth, setStageWidth] = useState(900),
     [sectionId, setSectionId] = useState("start"),
@@ -681,13 +731,17 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         saved.current = JSON.stringify(data.site);
         setPublishedAt(data.publishedAt);
         const first = data.site.sections[0];
-        setSectionId(first.id);
-        setSelected({
-          section: first.id,
-          block:
-            first.blocks.find((b: Block) => b.kind === "heading")?.id ||
-            first.blocks[0]?.id,
-        });
+        setSectionId(first?.id || "");
+        setSelected(
+          first
+            ? {
+                section: first.id,
+                block:
+                  first.blocks.find((b: Block) => b.kind === "heading")?.id ||
+                  first.blocks[0]?.id,
+              }
+            : null,
+        );
       })
       .catch((e) => setError(e.message));
     api("/integrations")
@@ -830,6 +884,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           const message = (e as Error).message;
           if (message.includes("anderen Fenster")) conflict.current = true;
           setStatus("Nicht gespeichert");
+          if (e instanceof ZodError) throw new Error(validationNotice);
           throw e;
         }
       });
@@ -853,7 +908,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     setTemplateBusy(true);
     setTemplateError("");
     try {
-      const next = createSite(templateChoice);
+      const next = { ...createSite(templateChoice), domain: previous.domain };
       integrationGeneration.current += 1;
       dragStart.current = null;
       change(next, false);
@@ -868,7 +923,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           (block) => block.kind === "heading",
         )!.id,
       });
-      setSectionId(next.sections[0].id);
+      setSectionId(next.sections[0]?.id || "");
       setOverflow({});
       setTemplates(false);
       setTemplateChoice(null);
@@ -938,7 +993,13 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         e.preventDefault();
         travel(e.shiftKey ? "redo" : "undo");
       }
-      if (e.key === "Escape" && !templates && !help && !publishOpen) {
+      if (
+        e.key === "Escape" &&
+        !templates &&
+        !help &&
+        !publishOpen &&
+        !removeTarget
+      ) {
         setPreview(false);
         setSelected(null);
       }
@@ -951,8 +1012,45 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     if (s) setSectionId(s.section);
     setInspectorOpen(true);
   }
+  function editField(field: string) {
+    setSelected(null);
+    setTab(
+      field.startsWith("integration-")
+        ? "integrations"
+        : field === "domain" || field.startsWith("legal-")
+          ? "settings"
+          : field === "section-label"
+            ? "layout"
+            : "content",
+    );
+    setShowPanel(true);
+    if (window.innerWidth <= 1050) setInspectorOpen(false);
+    setFocusRequest({ field });
+  }
+  function editBlock(selection: NonNullable<Selection>) {
+    select(selection);
+    const current = draft.current?.sections
+      .find((s) => s.id === selection.section)
+      ?.blocks.find((b) => b.id === selection.block);
+    setInspectorOpen(true);
+    if (window.innerWidth <= 1050) setShowPanel(false);
+    setFocusRequest({
+      field: current?.kind === "image" ? "block-image" : "block-text",
+    });
+  }
   function addBlock(kind: Block["kind"]) {
     if (!draft.current) return;
+    if (!draft.current.sections.length) {
+      const section = {
+        id: "abschnitt-" + uid().slice(0, 8),
+        label: t("Neuer Abschnitt"),
+        height: 400,
+        blocks: [createBlock(kind)],
+      };
+      change({ ...draft.current, sections: [section] });
+      select({ section: section.id, block: section.blocks[0].id });
+      return;
+    }
     const section =
       draft.current.sections.find((s) => s.id === sectionId) ||
       draft.current.sections[0];
@@ -981,7 +1079,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     a.href = URL.createObjectURL(
       new Blob([JSON.stringify(site, null, 2)], { type: "application/json" }),
     );
-    a.download = "klarwerk-website.json";
+    a.download = "klarwarg-website.json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     setNotice("Deine Website wurde als JSON gesichert.");
@@ -1042,6 +1140,20 @@ function Builder({ onLogout }: { onLogout: () => void }) {
       setPublishing(false);
     }
   }
+  const validationResult = React.useMemo(
+    () => (site ? siteSchema.safeParse(site) : null),
+    [site],
+  );
+  const validationIssues =
+    validationResult && !validationResult.success
+      ? validationResult.error.issues
+      : [];
+  const describedIssues = validationIssues.map((issue) =>
+    describeIssue(issue, t),
+  );
+  const fieldErrors = Object.fromEntries(
+    describedIssues.map((issue) => [issue.key, issue.message]),
+  );
   if (!site)
     return (
       <div className="loading-page">
@@ -1063,6 +1175,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
       ?.blocks.find((b) => b.id === selected?.block),
     activeSection =
       site.sections.find((s) => s.id === sectionId) || site.sections[0];
+  const blockPath = `sections.${site.sections.findIndex((s) => s.id === selected?.section)}.blocks.${site.sections.find((s) => s.id === selected?.section)?.blocks.findIndex((b) => b.id === selected?.block) ?? -1}`;
   const overflowing: Record<string, number> = Object.assign(
       {},
       ...Object.values(overflow),
@@ -1071,6 +1184,50 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     mismatch = otherAddress(site),
     mismatchCount =
       mismatch.blocks.length + (mismatch.tagline ? 1 : 0) + mismatch.services;
+  function showInvalidField(key: string) {
+    const path = key.split(".");
+    const fields: Record<string, string> = {
+      domain: "domain",
+      name: "name",
+      tagline: "tagline",
+      "contact.email": "contact-email",
+      "contact.phone": "contact-phone",
+      "contact.address": "contact-address",
+      "integrations.linkedinUrl": "integration-linkedin",
+      "integrations.bookingUrl": "integration-booking",
+      "integrations.appStoreUrl": "integration-appstore",
+      "integrations.githubUser": "integration-github",
+      "legal.imprint": "legal-imprint",
+      "legal.privacy": "legal-privacy",
+    };
+    if (fields[key]) return editField(fields[key]);
+    if (path[0] === "services")
+      return editField(`service-${path[1]}-${path[2]}`);
+    if (path[0] === "sections") {
+      const section = site!.sections[Number(path[1])];
+      if (path[2] === "blocks" && section?.blocks[Number(path[3])]) {
+        editBlock({
+          section: section.id,
+          block: section.blocks[Number(path[3])].id,
+        });
+        setFocusRequest({ field: "validation:" + key });
+        return;
+      }
+      if (section) {
+        setSectionId(section.id);
+        editField("section-label");
+        return;
+      }
+    }
+    setShowPanel(true);
+    setTab(
+      path[0] === "grid"
+        ? "layout"
+        : path[0] === "font" || path[0] === "colors"
+          ? "design"
+          : "settings",
+    );
+  }
   function showMismatch() {
     const first = mismatch.blocks[0];
     if (first) {
@@ -1133,6 +1290,42 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     site.repos.length > 0;
   const updateIntegrations = (p: Partial<Site["integrations"]>) =>
     patch({ integrations: { ...site.integrations, ...p } });
+  const fixedSections = [
+    {
+      id: "services" as const,
+      label: t("Leistungen"),
+      icon: LayoutTemplate,
+      target: "services-settings",
+    },
+    {
+      id: "projects" as const,
+      label: t("GitHub-Projekte"),
+      icon: Github,
+      target: "integrations",
+    },
+    {
+      id: "contact" as const,
+      label: t("Kontakt"),
+      icon: MailIcon,
+      target: "header-settings",
+    },
+  ];
+  function removeSection() {
+    if (!removeTarget || !draft.current) return;
+    const current = draft.current;
+    if (removeTarget.kind === "canvas") {
+      const sections = current.sections.filter(
+        (section) => section.id !== removeTarget.id,
+      );
+      patch({ sections });
+      setSectionId(sections[0]?.id || "");
+    } else {
+      const id = removeTarget.id as Site["hiddenSections"][number];
+      patch({ hiddenSections: [...new Set([...current.hiddenSections, id])] });
+    }
+    setSelected(null);
+    setRemoveTarget(null);
+  }
   function openDetails(id: string) {
     const el = document.getElementById(id) as HTMLDetailsElement | null;
     if (el) {
@@ -1221,7 +1414,15 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         <div className="panel-section">
           <div className="section-heading">
             <h3>{t("Seitenabschnitte")}</h3>
-            <span className="count">{site.sections.length + 2}</span>
+            <span className="count">
+              {site.sections.length +
+                fixedSections.filter(
+                  (section) =>
+                    !site.hiddenSections.includes(section.id) &&
+                    (section.id !== "projects" ||
+                      (site.repos.length > 0 && site.integrations.showRepos)),
+                ).length}
+            </span>
           </div>
           <p className="muted small">
             {t("Die Navigation entsteht automatisch.")}
@@ -1269,24 +1470,81 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 >
                   <ArrowUp size={13} />
                 </button>
+                <button
+                  className="tiny-button"
+                  aria-label={t("Bereich {label} entfernen", {
+                    label: s.label,
+                  })}
+                  onClick={() =>
+                    setRemoveTarget({
+                      kind: "canvas",
+                      id: s.id,
+                      label: s.label,
+                    })
+                  }
+                >
+                  <Trash2 size={13} />
+                </button>
               </div>
             ))}
-            <button
-              className="section-static"
-              onClick={() => openDetails("services-settings")}
-            >
-              <LayoutTemplate size={15} />
-              <span>{t("Leistungen")}</span>
-              <ChevronRight size={12} />
-            </button>
-            <button
-              className="section-static"
-              onClick={() => openDetails("header-settings")}
-            >
-              <MailIcon />
-              <span>{t("Kontakt")}</span>
-              <ChevronRight size={12} />
-            </button>
+            {fixedSections
+              .filter(
+                (section) =>
+                  !site.hiddenSections.includes(section.id) &&
+                  (section.id !== "projects" ||
+                    (site.repos.length > 0 && site.integrations.showRepos)),
+              )
+              .map((section) => (
+                <div className="section-row" key={section.id}>
+                  <button
+                    onClick={() => {
+                      if (section.target === "integrations") {
+                        setTab("integrations");
+                        setShowPanel(true);
+                      } else openDetails(section.target);
+                    }}
+                  >
+                    <section.icon size={15} />
+                    <span>{section.label}</span>
+                    <ChevronRight size={12} />
+                  </button>
+                  <button
+                    className="tiny-button"
+                    aria-label={t("Bereich {label} entfernen", {
+                      label: section.label,
+                    })}
+                    onClick={() =>
+                      setRemoveTarget({
+                        kind: "static",
+                        id: section.id,
+                        label: section.label,
+                      })
+                    }
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            {fixedSections
+              .filter((section) => site.hiddenSections.includes(section.id))
+              .map((section) => (
+                <button
+                  className="text-button"
+                  key={section.id}
+                  onClick={() =>
+                    patch({
+                      hiddenSections: site.hiddenSections.filter(
+                        (id) => id !== section.id,
+                      ),
+                    })
+                  }
+                >
+                  <Plus size={14} />
+                  {t("Bereich {label} wieder einfügen", {
+                    label: section.label,
+                  })}
+                </button>
+              ))}
           </div>
           <button
             className="text-button"
@@ -1339,19 +1597,22 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           </summary>
           <div className="details-content">
             <Field
+              path="name"
               label={t("Name / Unternehmen")}
               hint={t("In Texten setzt {placeholder} diesen Namen ein.", {
                 placeholder: namePlaceholder,
               })}
             >
               <input
+                data-editor-field={"name"}
                 value={site.name}
                 maxLength={120}
                 onChange={(e) => patch({ name: e.target.value })}
               />
             </Field>
-            <Field label={t("Unterzeile")}>
+            <Field path="tagline" label={t("Unterzeile")}>
               <input
+                data-editor-field={"tagline"}
                 value={site.tagline}
                 maxLength={250}
                 onChange={(e) => patch({ tagline: e.target.value })}
@@ -1360,10 +1621,12 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             {(["email", "phone", "address"] as const).map((key, i) => (
               <Field
                 key={key}
+                path={"contact." + key}
                 label={[t("E-Mail"), t("Telefon"), t("Adresse")][i]}
               >
                 <input
                   type={key === "email" ? "email" : "text"}
+                  data-editor-field={`contact-${key}`}
                   value={site.contact[key]}
                   onChange={(e) =>
                     patch({
@@ -1383,8 +1646,12 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           <div className="details-content">
             {site.services.map((s, i) => (
               <div key={i} className="service-edit">
-                <Field label={t("Leistung ") + (i + 1)}>
+                <Field
+                  path={`services.${i}.title`}
+                  label={t("Leistung ") + (i + 1)}
+                >
                   <input
+                    data-editor-field={`service-${i}-title`}
                     value={s.title}
                     onChange={(e) =>
                       patch({
@@ -1395,9 +1662,13 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                     }
                   />
                 </Field>
-                <Field label={t("Beschreibung")}>
+                <Field
+                  path={`services.${i}.description`}
+                  label={t("Beschreibung")}
+                >
                   <textarea
                     rows={3}
+                    data-editor-field={`service-${i}-description`}
                     value={s.description}
                     onChange={(e) =>
                       patch({
@@ -1575,7 +1846,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               </button>
             ))}
           </div>
-          <Field label={t("Eigene Spaltenanzahl (1–24)")}>
+          <Field path={"grid.columns"} label={t("Eigene Spaltenanzahl (1–24)")}>
             <input
               type="number"
               min={1}
@@ -1591,7 +1862,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               }
             />
           </Field>
-          <Field label={t("Spaltenabstand · ") + site.grid.gap + " px"}>
+          <Field
+            path="grid.gap"
+            label={t("Spaltenabstand · ") + site.grid.gap + " px"}
+          >
             <input
               type="range"
               min={0}
@@ -1602,7 +1876,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               }
             />
           </Field>
-          <Field label={t("Zeilenraster · ") + site.grid.row + " px"}>
+          <Field
+            path="grid.row"
+            label={t("Zeilenraster · ") + site.grid.row + " px"}
+          >
             <input
               type="range"
               min={4}
@@ -1615,109 +1892,106 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             />
           </Field>
         </div>
-        <div className="panel-section">
-          <h3>{t("Aktueller Abschnitt")}</h3>
-          <Field label={t("Abschnitt auswählen")}>
-            <select
-              value={sectionId}
-              onChange={(e) => setSectionId(e.target.value)}
+        {activeSection && (
+          <div className="panel-section">
+            <h3>{t("Aktueller Abschnitt")}</h3>
+            <Field label={t("Abschnitt auswählen")}>
+              <select
+                value={sectionId}
+                onChange={(e) => setSectionId(e.target.value)}
+              >
+                {site.sections.map((s) => (
+                  <option value={s.id} key={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field
+              path={`sections.${site.sections.indexOf(activeSection)}.label`}
+              label={t("Name in der Navigation")}
             >
-              {site.sections.map((s) => (
-                <option value={s.id} key={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t("Name in der Navigation")}>
-            <input
-              value={activeSection.label}
-              onChange={(e) =>
+              <input
+                data-editor-field={"section-label"}
+                value={activeSection.label}
+                onChange={(e) =>
+                  patch({
+                    sections: site.sections.map((s) =>
+                      s.id === activeSection.id
+                        ? { ...s, label: e.target.value }
+                        : s,
+                    ),
+                  })
+                }
+              />
+            </Field>
+            <Field
+              path={`sections.${site.sections.indexOf(activeSection)}.height`}
+              label={t("Abschnittshöhe (px)")}
+            >
+              <input
+                type="number"
+                min={160}
+                max={3500}
+                step={16}
+                value={activeSection.height}
+                onChange={(e) =>
+                  patch({
+                    sections: site.sections.map((s) =>
+                      s.id === activeSection.id
+                        ? {
+                            ...s,
+                            height: Math.max(
+                              160,
+                              Math.min(3500, Number(e.target.value)),
+                            ),
+                          }
+                        : s,
+                    ),
+                  })
+                }
+              />
+            </Field>
+            <button
+              className="secondary full"
+              onClick={() => {
+                const current = draft.current!;
                 patch({
                   sections: site.sections.map((s) =>
-                    s.id === activeSection.id
-                      ? { ...s, label: e.target.value }
-                      : s,
-                  ),
-                })
-              }
-            />
-          </Field>
-          <Field label={t("Abschnittshöhe (px)")}>
-            <input
-              type="number"
-              min={160}
-              max={3500}
-              step={16}
-              value={activeSection.height}
-              onChange={(e) =>
-                patch({
-                  sections: site.sections.map((s) =>
-                    s.id === activeSection.id
+                    s.id === sectionId
                       ? {
                           ...s,
-                          height: Math.max(
-                            160,
-                            Math.min(3500, Number(e.target.value)),
+                          blocks: s.blocks.map((b) =>
+                            snapBlock(b, {
+                              ...current,
+                              grid: { ...current.grid, snap: true },
+                            }),
                           ),
                         }
                       : s,
                   ),
-                })
-              }
-            />
-          </Field>
-          <button
-            className="secondary full"
-            onClick={() => {
-              const current = draft.current!;
-              patch({
-                sections: site.sections.map((s) =>
-                  s.id === sectionId
-                    ? {
-                        ...s,
-                        blocks: s.blocks.map((b) =>
-                          snapBlock(b, {
-                            ...current,
-                            grid: { ...current.grid, snap: true },
-                          }),
-                        ),
-                      }
-                    : s,
-                ),
-              });
-              setNotice("Die Elemente sind am Raster ausgerichtet.");
-            }}
-          >
-            <Columns3 size={16} />
-            {t("Abschnitt ausrichten")}
-          </button>
-          {site.sections.length > 1 && (
+                });
+                setNotice("Die Elemente sind am Raster ausgerichtet.");
+              }}
+            >
+              <Columns3 size={16} />
+              {t("Abschnitt ausrichten")}
+            </button>
             <button
               className="text-button danger"
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    t("Diesen Abschnitt mit allen Elementen entfernen?"),
-                  )
-                )
-                  return;
-                patch({
-                  sections: site.sections.filter(
-                    (s) => s.id !== activeSection.id,
-                  ),
-                });
-                setSectionId(
-                  site.sections.find((s) => s.id !== activeSection.id)!.id,
-                );
-                setSelected(null);
-              }}
+              onClick={() =>
+                setRemoveTarget({
+                  kind: "canvas",
+                  id: activeSection.id,
+                  label: activeSection.label,
+                })
+              }
             >
               <Trash2 size={14} />
               {t("Abschnitt entfernen")}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </>
     ) : tab === "integrations" ? (
       <>
@@ -1735,7 +2009,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             <CalendarDays size={21} />
             <h3>{t("Termine & Berufssoftware")}</h3>
           </div>
-          <Field label={t("Dein Anbieter")}>
+          <Field path={"integrations.provider"} label={t("Dein Anbieter")}>
             <select
               value={site.integrations.provider}
               onChange={(e) =>
@@ -1752,6 +2026,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             </select>
           </Field>
           <Field
+            path="integrations.bookingUrl"
             label={t("Öffentlicher Buchungs- oder Portallink")}
             hint={t(
               "Kopiere den Link aus deinem Anbieterkonto. Der Hauptbutton öffnet diese Adresse.",
@@ -1760,6 +2035,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             <input
               type="url"
               placeholder="https://…"
+              data-editor-field={"integration-booking"}
               value={site.integrations.bookingUrl}
               onChange={(e) =>
                 updateIntegrations({ bookingUrl: e.target.value })
@@ -1792,12 +2068,14 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               <span className="badge">API</span>
             </div>
             <Field
+              path="integrations.githubUser"
               label={t("GitHub-Benutzername")}
               hint={t(
                 "Alle öffentlichen eigenen Repositories werden importiert, auch über mehrere Seiten.",
               )}
             >
               <input
+                data-editor-field={"integration-github"}
                 value={site.integrations.githubUser}
                 placeholder="z. B. octocat"
                 maxLength={39}
@@ -1825,6 +2103,25 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 {t(" Repositories importiert")}
               </div>
             )}
+            {site.repos.map((repo) => (
+              <div key={repo.id} className="service-edit" data-repo={repo.id}>
+                <p className="small">
+                  <strong>{repo.name}</strong>
+                </p>
+                <button
+                  className="text-button danger"
+                  aria-label={`${repo.name}: ${t("Entfernen")}`}
+                  onClick={() =>
+                    patch({
+                      repos: site.repos.filter((item) => item.id !== repo.id),
+                    })
+                  }
+                >
+                  <Trash2 size={13} />
+                  {t("Entfernen")}
+                </button>
+              </div>
+            ))}
             <label className="toggle-row">
               <span>{t("Projekte auf Website zeigen")}</span>
               <input
@@ -1837,15 +2134,45 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             </label>
           </div>
         )}
+        {(site.profession === "developer" ||
+          !!site.integrations.appStoreUrl) && (
+          <div className="panel-section">
+            <div className="integration-title">
+              <Smartphone size={21} />
+              <h3>App Store</h3>
+            </div>
+            <Field
+              path="integrations.appStoreUrl"
+              label={t("Dein App-Store-Eintrag")}
+              hint={t(
+                "Füge den öffentlichen Link zu deiner App im Apple App Store ein.",
+              )}
+            >
+              <input
+                type="url"
+                placeholder="https://apps.apple.com/…"
+                data-editor-field="integration-appstore"
+                value={site.integrations.appStoreUrl}
+                onChange={(event) =>
+                  updateIntegrations({ appStoreUrl: event.target.value.trim() })
+                }
+              />
+            </Field>
+          </div>
+        )}
         <div className="panel-section">
           <div className="integration-title">
             <Linkedin size={21} />
             <h3>LinkedIn</h3>
           </div>
-          <Field label={t("Dein öffentliches LinkedIn-Profil")}>
+          <Field
+            path="integrations.linkedinUrl"
+            label={t("Dein öffentliches LinkedIn-Profil")}
+          >
             <input
               type="url"
               placeholder="https://www.linkedin.com/in/…"
+              data-editor-field={"integration-linkedin"}
               value={site.integrations.linkedinUrl}
               onChange={(e) =>
                 updateIntegrations({ linkedinUrl: e.target.value })
@@ -1944,7 +2271,25 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         <div className="panel-section">
           <span className="eyebrow">{t("ALLES GUT AUFGEHOBEN.")}</span>
           <h3>{t("Deine Website verwalten.")}</h3>
-          <Field label={t("Sprache der Website")}>
+          <Field
+            path="domain"
+            label={t("Eigene Domain")}
+            hint={t(
+              "Zum Beispiel meine-domain.at. Die Domain wird mit dem Entwurf veröffentlicht und für Website-Links verwendet. DNS, HTTPS und die Weiterleitung auf diesen Server müssen beim Hosting eingerichtet sein.",
+            )}
+          >
+            <input
+              type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="meine-domain.at"
+              value={site.domain}
+              data-editor-field="domain"
+              onChange={(event) => patch({ domain: event.target.value })}
+            />
+          </Field>
+          <Field path={"language"} label={t("Sprache der Website")}>
             <select
               value={site.language}
               onChange={(event) =>
@@ -1992,11 +2337,34 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 ) {
                   change(next);
                   setSelected(null);
-                  setSectionId(next.sections[0].id);
+                  setSectionId(next.sections[0]?.id || "");
                   setNotice("Sicherung als Entwurf geladen.");
                 }
-              } catch {
-                setError("Diese Datei ist keine gültige Klarwerk-Sicherung.");
+                setError("");
+              } catch (error) {
+                if (error instanceof ZodError)
+                  setError(
+                    t("Die Sicherung enthält ungültige Angaben:") +
+                      "\n" +
+                      error.issues
+                        .map((issue) => {
+                          const item = describeIssue(issue, t);
+                          return `${item.label}: ${item.message}`;
+                        })
+                        .join("\n"),
+                  );
+                else if (error instanceof SyntaxError)
+                  setError(
+                    t(
+                      "Die Datei enthält kein gültiges JSON. Bitte eine unveränderte JSON-Sicherung auswählen.",
+                    ),
+                  );
+                else
+                  setError(
+                    error instanceof Error
+                      ? error.message
+                      : "Diese Datei ist keine gültige Klarwarg-Sicherung.",
+                  );
               }
               e.target.value = "";
             }}
@@ -2013,18 +2381,20 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 "Trage hier die für deinen Betrieb passenden Angaben ein. Sie werden im Footer verlinkt.",
               )}
             </p>
-            <Field label={t("Impressum")}>
+            <Field path={"legal.imprint"} label={t("Impressum")}>
               <textarea
                 rows={7}
+                data-editor-field={"legal-imprint"}
                 value={site.legal.imprint}
                 onChange={(e) =>
                   patch({ legal: { ...site.legal, imprint: e.target.value } })
                 }
               />
             </Field>
-            <Field label={t("Datenschutzerklärung")}>
+            <Field path={"legal.privacy"} label={t("Datenschutzerklärung")}>
               <textarea
                 rows={7}
+                data-editor-field={"legal-privacy"}
                 value={site.legal.privacy}
                 onChange={(e) =>
                   patch({ legal: { ...site.legal, privacy: e.target.value } })
@@ -2075,7 +2445,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                     saved.current = JSON.stringify(data.site);
                     change(data.site);
                     setSelected(null);
-                    setSectionId(data.site.sections[0].id);
+                    setSectionId(data.site.sections[0]?.id || "");
                     setNotice("Version als Entwurf wiederhergestellt.");
                   } catch (e) {
                     setError((e as Error).message);
@@ -2135,6 +2505,23 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             </button>
           </form>
         </details>
+        <div className="panel-section">
+          <h3>{t("Quellcode")}</h3>
+          <p className="muted small">
+            {t(
+              "Klarwarg ist freie Software unter der GNU Affero General Public License 3.0.",
+            )}
+          </p>
+          <a
+            className="text-button"
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ExternalLink size={14} />
+            {t("Quellcode ansehen")}
+          </a>
+        </div>
         <button
           className="text-button logout"
           onClick={async () => {
@@ -2153,921 +2540,1025 @@ function Builder({ onLogout }: { onLogout: () => void }) {
       </>
     );
   return (
-    <div className={"builder " + (preview ? "preview-mode" : "")}>
-      <a className="skip-link" href="#workspace">
-        {t("Zum Editor springen")}
-      </a>
-      <header className="app-header">
-        <a className="wordmark" href="/admin" aria-label="Klarwerk">
-          <span className="brand-mark klarwerk-mark">
-            <BrandLogo size={34} />
-          </span>
-          klarwerk<span className="brand-dot">.</span>
+    <FieldErrors.Provider value={fieldErrors}>
+      <div className={"builder " + (preview ? "preview-mode" : "")}>
+        <a className="skip-link" href="#workspace">
+          {t("Zum Editor springen")}
         </a>
-        <span className="header-divider" />
-        <span className="project-name">
-          {t("Meine Website")}{" "}
-          <span className="project-badge">{t(currentCareer.name)}</span>
-        </span>
-        <div className="header-actions">
-          <LanguageSwitch />
-          <span
-            className={"save-status " + (error ? "has-error" : "")}
-            aria-live="polite"
-          >
-            {status === "Wird gespeichert …" ? (
-              <LoaderCircle size={14} className="spin" />
-            ) : error ? (
-              <AlertCircle size={14} />
-            ) : (
-              <Check size={14} />
-            )}
-            <span>{t(status)}</span>
+        <header className="app-header">
+          <a className="wordmark" href="/admin" aria-label="Klarwarg">
+            <span className="brand-mark klarwarg-mark">
+              <BrandLogo size={34} />
+            </span>
+            klarwarg<span className="brand-dot">.</span>
+          </a>
+          <span className="header-divider" />
+          <span className="project-name">
+            {t("Meine Website")}{" "}
+            <span className="project-badge">{t(currentCareer.name)}</span>
           </span>
-          <button
-            className="secondary preview-button"
-            aria-label={preview ? t("Zurück zum Editor") : t("Vorschau")}
-            title={preview ? t("Zurück zum Editor") : t("Vorschau")}
-            onClick={() => setPreview(!preview)}
-          >
-            <Monitor size={16} />
-            <span className="header-action-label">
-              {preview ? t("Zurück zum Editor") : t("Vorschau")}
-            </span>
-          </button>
-          <button
-            className="primary publish-button"
-            aria-label={
-              publishing ? t("Veröffentlicht …") : t("Veröffentlichen")
-            }
-            title={t("Veröffentlichen")}
-            onClick={() => setPublishOpen(true)}
-            disabled={publishing}
-          >
-            <Globe size={16} />
-            <span className="header-action-label">
-              {publishing ? t("Veröffentlicht …") : t("Veröffentlichen")}
-            </span>
-            <ArrowUpRight size={15} />
-          </button>
-        </div>
-      </header>
-      <div className="app-body">
-        {!preview && (
-          <>
-            <nav className="tool-rail" aria-label={t("Editor-Werkzeuge")}>
-              {tabs.map((item) => (
-                <button
-                  key={item.id}
-                  className={tab === item.id && showPanel ? "active" : ""}
-                  onClick={() => {
-                    setTab(item.id);
-                    setShowPanel(true);
-                  }}
-                  aria-pressed={tab === item.id && showPanel}
-                >
-                  <item.icon size={21} />
-                  <span>{t(item.label)}</span>
-                </button>
-              ))}
-              <button className="help-button" onClick={() => setHelp(true)}>
-                <CircleHelp size={21} />
-                <span>{t("Kurze Hilfe")}</span>
-              </button>
-              <div className="avatar" aria-label="Admin">
-                A
-              </div>
-            </nav>
-            {showPanel && (
-              <aside className="left-panel">
-                <div className="panel-title">
-                  <h2>
-                    {t(tabs.find((item) => item.id === tab)?.label || "")}
-                  </h2>
-                  <button
-                    className="icon-button panel-close"
-                    onClick={() => setShowPanel(false)}
-                    aria-label={t("Werkzeuge einklappen")}
-                  >
-                    <X size={17} />
-                  </button>
-                </div>
-                <div className="panel-scroll">
-                  {panelContent}
-                  <div className="panel-tip">
-                    <Sparkles size={17} />
-                    <div>
-                      <strong>{t("Du kannst nichts kaputtmachen.")}</strong>
-                      <p>
-                        {t(
-                          "Mit dem Zurück-Pfeil nimmst du Änderungen einfach wieder zurück.",
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </aside>
-            )}
-          </>
-        )}
-        <main className="workspace" id="workspace">
-          <div className="workspace-top">
-            <div>
-              <div className="workspace-heading">
-                <h1>
-                  {preview
-                    ? t("So sieht deine Website aus.")
-                    : t("Deine Website. Dein Anfang.")}
-                </h1>
-                <span className="draft-tag">
-                  {preview ? t("Vorschau") : t("Entwurf")}
-                </span>
-              </div>
-              <p>
-                {preview
-                  ? t("Teste deinen Auftritt auf Desktop und Handy.")
-                  : t("Klicke ein Element an und mach es zu deinem.")}
-              </p>
-            </div>
-            <div className="workspace-tools">
-              <div className="device-switch" aria-label={t("Vorschaugröße")}>
-                <button
-                  className={!mobile ? "active" : ""}
-                  aria-label={t("Desktop-Vorschau")}
-                  aria-pressed={!mobile}
-                  onClick={() => setMobile(false)}
-                >
-                  <Monitor size={17} />
-                </button>
-                <button
-                  className={mobile ? "active" : ""}
-                  aria-label={t("Handy-Vorschau")}
-                  aria-pressed={mobile}
-                  onClick={() => setMobile(true)}
-                >
-                  <Smartphone size={17} />
-                </button>
-              </div>
-              {!preview && (
-                <>
-                  <div className="undo-tools">
-                    <button
-                      className="icon-button"
-                      disabled={!historyCount[0]}
-                      onClick={() => travel("undo")}
-                      aria-label={t("Rückgängig")}
-                    >
-                      <Undo2 size={18} />
-                    </button>
-                    <button
-                      className="icon-button"
-                      disabled={!historyCount[1]}
-                      onClick={() => travel("redo")}
-                      aria-label={t("Wiederholen")}
-                    >
-                      <Redo2 size={18} />
-                    </button>
-                  </div>
-                  <button
-                    className="icon-button inspector-toggle"
-                    onClick={() => setInspectorOpen(!inspectorOpen)}
-                    aria-label={t("Elementeigenschaften umschalten")}
-                  >
-                    <Settings2 size={18} />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-          {!preview && finishCount < 3 && (
-            <div className="start-strip">
-              <span className="start-spark">
-                <Sparkles size={17} />
-              </span>
-              <div>
-                <strong>{t("In wenigen Schritten zu deinem Auftritt")}</strong>
-                <span>
-                  {t(
-                    "Deine Vorlage ist bereit. Jetzt kommt deine persönliche Note.",
-                  )}
-                </span>
-              </div>
-              <span className="progress-count">
-                {finishCount}
-                {t(" von 3")}
-              </span>
-              <div className="progress-track">
-                <i style={{ width: `${(finishCount / 3) * 100}%` }} />
-              </div>
-              <button
-                onClick={() => {
-                  setHelp(true);
-                }}
-                aria-label={t("Erste Schritte anzeigen")}
-              >
-                <ArrowRight size={17} />
-              </button>
-            </div>
-          )}
-          {error && (
-            <div className="error-banner" role="alert">
-              <AlertCircle size={17} />
-              <span>{t(error)}</span>
-              <button onClick={() => save().catch((e) => setError(e.message))}>
-                {t("Erneut speichern")}
-              </button>
-              <button
-                onClick={() => setError("")}
-                aria-label={t("Fehlermeldung schließen")}
-              >
-                <X size={16} />
-              </button>
-            </div>
-          )}
-          <div className="canvas-toolbar">
-            <span>
-              <span className="browser-dots">
-                <i />
-                <i />
-                <i />
-              </span>
-              <LockKeyhole size={12} />
-              {site.name
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, "-")
-                .replace(/-+/g, "-")}
-              .de{" "}
-              <span className="example-domain">{t("· Beispieladresse")}</span>
-            </span>
-            <span>
-              {mobile ? t("Handy") : t("Desktop")}
-              <ChevronDown size={12} />
-            </span>
-          </div>
-          <div className="stage" ref={stage}>
-            <div
-              className={"paper-wrap " + (mobile ? "phone-paper" : "")}
-              style={{ width: paperWidth * scale }}
+          <div className="header-actions">
+            <LanguageSwitch />
+            <span
+              className={"save-status " + (error ? "has-error" : "")}
+              aria-live="polite"
             >
-              <div
-                className="paper"
-                style={
-                  {
-                    width: paperWidth,
-                    zoom: Math.max(0.12, scale),
-                  } as CSSProperties
-                }
-              >
-                <SiteSurface
-                  site={site}
-                  editing={!preview}
-                  selected={selected}
-                  onSelect={select}
-                  onMove={moveBlock}
-                  mobile={mobile}
-                  onOverflow={reportOverflow}
-                  overflowing={overflowing}
-                  onTextEdit={() => {
-                    setInspectorOpen(true);
-                    setTimeout(
-                      () => document.getElementById("block-text")?.focus(),
-                      50,
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="workspace-bottom">
-            <span>
-              <MousePointer2 size={14} />
-              {preview
-                ? t("Deine Besucher sehen nur die veröffentlichte Version.")
-                : mobile
-                  ? t(
-                      "Handyvorschau · Positionen werden auf kleinen Displays gestapelt.",
-                    )
-                  : t("Anklicken zum Bearbeiten · Ziehen zum Verschieben")}
+              {status === "Wird gespeichert …" ? (
+                <LoaderCircle size={14} className="spin" />
+              ) : error ? (
+                <AlertCircle size={14} />
+              ) : (
+                <Check size={14} />
+              )}
+              <span>{t(status)}</span>
             </span>
             <button
-              className="zoom-indicator"
-              onClick={() => setMobile(!mobile)}
+              className="secondary preview-button"
+              aria-label={preview ? t("Zurück zum Editor") : t("Vorschau")}
+              title={preview ? t("Zurück zum Editor") : t("Vorschau")}
+              onClick={() => setPreview(!preview)}
             >
-              <ZoomIn size={14} />
-              {Math.round(scale * 100)} %<ChevronDown size={12} />
+              <Monitor size={16} />
+              <span className="header-action-label">
+                {preview ? t("Zurück zum Editor") : t("Vorschau")}
+              </span>
+            </button>
+            <button
+              className="primary publish-button"
+              aria-label={
+                publishing ? t("Veröffentlicht …") : t("Veröffentlichen")
+              }
+              title={t("Veröffentlichen")}
+              onClick={() => setPublishOpen(true)}
+              disabled={publishing}
+            >
+              <Globe size={16} />
+              <span className="header-action-label">
+                {publishing ? t("Veröffentlicht …") : t("Veröffentlichen")}
+              </span>
+              <ArrowUpRight size={15} />
             </button>
           </div>
-        </main>
-        {!preview && inspectorOpen && (
-          <aside className="inspector">
-            <div className="panel-title">
-              <h2>{t("Element bearbeiten")}</h2>
-              <button
-                className="icon-button"
-                onClick={() => setInspectorOpen(false)}
-                aria-label={t("Eigenschaften schließen")}
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="panel-scroll">
-              {block ? (
-                <>
-                  <div className="panel-section">
-                    <div className="selected-type">
-                      {block.kind === "image" ? (
-                        <ImagePlus size={20} />
-                      ) : block.kind === "button" ? (
-                        <MousePointer2 size={20} />
-                      ) : (
-                        <Type size={20} />
-                      )}
-                      <span>
-                        {block.kind === "image"
-                          ? t("Bild")
-                          : block.kind === "heading"
-                            ? t("Überschrift")
-                            : block.kind === "button"
-                              ? t("Button")
-                              : block.kind === "eyebrow"
-                                ? t("Kleine Überschrift")
-                                : t("Text")}
-                      </span>
-                      <span className="selected-dot" />
-                    </div>
-                    {block.kind !== "image" ? (
-                      <>
-                        <label className="inspector-label" htmlFor="block-text">
-                          {block.kind === "button"
-                            ? t("Beschriftung")
-                            : t("Dein Text")}
-                        </label>
-                        <textarea
-                          id="block-text"
-                          className="block-text"
-                          rows={block.kind === "button" ? 2 : 5}
-                          value={block.text}
-                          onChange={(e) =>
-                            mutateBlock({ text: e.target.value })
-                          }
-                        />
-                        <span className="input-note">
-                          {block.text.includes(namePlaceholder)
-                            ? t("{placeholder} wird zu „{name}“.", {
-                                placeholder: namePlaceholder,
-                                name: site.name,
-                              })
-                            : t("Änderungen siehst du sofort.")}
-                        </span>
-                        {needed && selected && (
-                          <p className="contrast-warning overflow-warning">
-                            <AlertCircle size={15} />
-                            <span>
-                              {t(
-                                "Der Text ist länger als sein Kasten und überdeckt sonst, was darunter steht.",
-                              )}{" "}
-                              <button
-                                className="text-button"
-                                onClick={() =>
-                                  fitBlock(selected.section, block.id, needed)
-                                }
-                              >
-                                {t("Kasten anpassen")}
-                              </button>
-                            </span>
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="image-thumb">
-                          {block.src && (
-                            <img
-                              src={
-                                block.src.startsWith("/uploads/")
-                                  ? API + block.src
-                                  : block.src
-                              }
-                              alt={block.alt}
-                            />
-                          )}
-                        </div>
-                        <button
-                          className="secondary full"
-                          onClick={() => uploadInput.current?.click()}
-                          disabled={syncing === "upload"}
-                        >
-                          {syncing === "upload" ? (
-                            <LoaderCircle size={16} className="spin" />
-                          ) : (
-                            <Upload size={16} />
-                          )}
-                          {t("Eigenes Bild hochladen")}
-                        </button>
-                        <input
-                          ref={uploadInput}
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/gif"
-                          hidden
-                          onChange={(e) => {
-                            upload(e.target.files?.[0]);
-                            e.target.value = "";
-                          }}
-                        />
-                        <p className="small muted">
-                          {t("PNG, JPG oder WebP bis 30 MB · GIF bis 8 MB")}
-                        </p>
-                        <Field label={t("Bildform")}>
-                          <select
-                            value={block.imageShape}
-                            onChange={(event) =>
-                              mutateBlock({
-                                imageShape: event.target
-                                  .value as Block["imageShape"],
-                              })
-                            }
-                          >
-                            {imageShapes.map((shape) => (
-                              <option key={shape.id} value={shape.id}>
-                                {t(shape.label)}
-                              </option>
-                            ))}
-                          </select>
-                        </Field>
-                        <Field
-                          label={t("Bildbeschreibung")}
-                          hint={t(
-                            "Beschreibe kurz den Inhalt für Menschen, die das Bild nicht sehen können.",
-                          )}
-                        >
-                          <input
-                            value={block.alt}
-                            onChange={(e) =>
-                              mutateBlock({ alt: e.target.value })
-                            }
-                          />
-                        </Field>
-                      </>
-                    )}
-                    {block.kind === "button" && (
-                      <Field
-                        label={t("Ziel des Buttons")}
-                        hint={t("HTTPS-Adresse, #kontakt, mailto: oder tel:")}
-                      >
-                        <input
-                          value={block.href}
-                          onChange={(e) =>
-                            mutateBlock({ href: e.target.value })
-                          }
-                        />
-                      </Field>
-                    )}
-                    {block.kind === "button" &&
-                      selected?.section === "start" &&
-                      site.integrations.bookingUrl && (
-                        <p className="small muted">
-                          {t(
-                            "Dieser Startseiten-Button verwendet deinen Buchungslink aus „Anbindungen“.",
-                          )}
-                        </p>
-                      )}
-                    {block.kind !== "image" && (
-                      <Field label={t("Schriftgröße")}>
-                        <div className="size-field">
-                          <input
-                            aria-label={t("Schriftgröße in Pixeln")}
-                            type="number"
-                            min={12}
-                            max={96}
-                            value={block.fontSize}
-                            onChange={(e) =>
-                              mutateBlock({
-                                fontSize: Math.max(
-                                  12,
-                                  Math.min(96, Number(e.target.value)),
-                                ),
-                              })
-                            }
-                          />
-                          <span>px</span>
-                        </div>
-                      </Field>
-                    )}
+        </header>
+        <div className="app-body">
+          {!preview && (
+            <>
+              <nav className="tool-rail" aria-label={t("Editor-Werkzeuge")}>
+                {tabs.map((item) => (
+                  <button
+                    key={item.id}
+                    className={tab === item.id && showPanel ? "active" : ""}
+                    onClick={() => {
+                      setTab(item.id);
+                      setShowPanel(true);
+                    }}
+                    aria-pressed={tab === item.id && showPanel}
+                  >
+                    <item.icon size={21} />
+                    <span>{t(item.label)}</span>
+                  </button>
+                ))}
+                <button className="help-button" onClick={() => setHelp(true)}>
+                  <CircleHelp size={21} />
+                  <span>{t("Kurze Hilfe")}</span>
+                </button>
+                <div className="avatar" aria-label="Admin">
+                  A
+                </div>
+              </nav>
+              {showPanel && (
+                <aside className="left-panel">
+                  <div className="panel-title">
+                    <h2>
+                      {t(tabs.find((item) => item.id === tab)?.label || "")}
+                    </h2>
+                    <button
+                      className="icon-button panel-close"
+                      onClick={() => setShowPanel(false)}
+                      aria-label={t("Werkzeuge einklappen")}
+                    >
+                      <X size={17} />
+                    </button>
                   </div>
-                  <div className="panel-section">
-                    <div className="section-heading">
-                      <h3>{t("Position & Größe")}</h3>
-                      <Move size={15} />
+                  <div className="panel-scroll">
+                    {panelContent}
+                    <div className="panel-tip">
+                      <Sparkles size={17} />
+                      <div>
+                        <strong>{t("Du kannst nichts kaputtmachen.")}</strong>
+                        <p>
+                          {t(
+                            "Mit dem Zurück-Pfeil nimmst du Änderungen einfach wieder zurück.",
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <p className="small muted">
-                      {t("Auf einer 1200 px breiten Arbeitsfläche.")}
-                    </p>
-                    <div className="coordinate-grid">
-                      {(["x", "y", "w", "h"] as const).map((key, i) => (
-                        <Field
-                          key={key}
-                          label={
-                            [
-                              t("X · horizontal"),
-                              t("Y · vertikal"),
-                              t("Breite"),
-                              t("Höhe"),
-                            ][i]
-                          }
-                        >
-                          <input
-                            type="number"
-                            step={1}
-                            min={key === "w" ? 60 : key === "h" ? 30 : 0}
-                            max={key === "y" ? 3000 : key === "h" ? 1500 : 1200}
-                            value={Math.round(block[key])}
-                            onChange={(e) => {
-                              const min =
-                                  key === "w" ? 60 : key === "h" ? 30 : 0,
-                                max =
-                                  key === "y"
-                                    ? 3000
-                                    : key === "h"
-                                      ? 1500
-                                      : 1200;
-                              mutateBlock({
-                                [key]: Math.max(
-                                  min,
-                                  Math.min(max, Number(e.target.value)),
-                                ),
-                              });
-                            }}
-                          />
-                        </Field>
-                      ))}
+                  </div>
+                </aside>
+              )}
+            </>
+          )}
+          <main className="workspace" id="workspace">
+            <div className="workspace-top">
+              <div>
+                <div className="workspace-heading">
+                  <h1>
+                    {preview
+                      ? t("So sieht deine Website aus.")
+                      : t("Deine Website. Dein Anfang.")}
+                  </h1>
+                  <span className="draft-tag">
+                    {preview ? t("Vorschau") : t("Entwurf")}
+                  </span>
+                </div>
+                <p>
+                  {preview
+                    ? t("Teste deinen Auftritt auf Desktop und Handy.")
+                    : t("Klicke ein Element an und mach es zu deinem.")}
+                </p>
+              </div>
+              <div className="workspace-tools">
+                <div className="device-switch" aria-label={t("Vorschaugröße")}>
+                  <button
+                    className={!mobile ? "active" : ""}
+                    aria-label={t("Desktop-Vorschau")}
+                    aria-pressed={!mobile}
+                    onClick={() => setMobile(false)}
+                  >
+                    <Monitor size={17} />
+                  </button>
+                  <button
+                    className={mobile ? "active" : ""}
+                    aria-label={t("Handy-Vorschau")}
+                    aria-pressed={mobile}
+                    onClick={() => setMobile(true)}
+                  >
+                    <Smartphone size={17} />
+                  </button>
+                </div>
+                {!preview && (
+                  <>
+                    <div className="undo-tools">
+                      <button
+                        className="icon-button"
+                        disabled={!historyCount[0]}
+                        onClick={() => travel("undo")}
+                        aria-label={t("Rückgängig")}
+                      >
+                        <Undo2 size={18} />
+                      </button>
+                      <button
+                        className="icon-button"
+                        disabled={!historyCount[1]}
+                        onClick={() => travel("redo")}
+                        aria-label={t("Wiederholen")}
+                      >
+                        <Redo2 size={18} />
+                      </button>
                     </div>
                     <button
-                      className="text-button"
-                      onClick={() => {
-                        mutateBlock(
-                          snapBlock(block, {
-                            ...site,
-                            grid: { ...site.grid, snap: true },
-                          }),
-                        );
-                        setNotice("Element am Raster ausgerichtet.");
-                      }}
+                      className="icon-button inspector-toggle"
+                      onClick={() => setInspectorOpen(!inspectorOpen)}
+                      aria-label={t("Elementeigenschaften umschalten")}
                     >
-                      <Columns3 size={14} />
-                      {t("Am Raster ausrichten")}
+                      <Settings2 size={18} />
                     </button>
-                    <label className="toggle-row compact">
-                      <span>{t("Einrasten aktiv")}</span>
-                      <input
-                        type="checkbox"
-                        checked={site.grid.snap}
-                        onChange={(e) =>
-                          patch({
-                            grid: { ...site.grid, snap: e.target.checked },
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                  <div className="panel-section">
-                    <Field label={t("Name des Abschnitts")}>
-                      <input
-                        value={
-                          site.sections.find((s) => s.id === selected?.section)
-                            ?.label || ""
-                        }
-                        onChange={(e) =>
-                          patch({
-                            sections: site.sections.map((s) =>
-                              s.id === selected?.section
-                                ? { ...s, label: e.target.value }
-                                : s,
-                            ),
-                          })
-                        }
-                      />
-                    </Field>
-                    <div className="element-actions">
-                      <button
-                        className="secondary"
-                        onClick={() => {
-                          if (!selected) return;
-                          const copy = {
-                            ...block,
-                            id: uid(),
-                            x: Math.min(1200 - block.w, block.x + 24),
-                            y: block.y + 24,
-                          };
-                          patch({
-                            sections: site.sections.map((s) =>
-                              s.id === selected.section
-                                ? {
-                                    ...s,
-                                    height: Math.max(
-                                      s.height,
-                                      copy.y + copy.h + 32,
-                                    ),
-                                    blocks: [...s.blocks, copy],
+                  </>
+                )}
+              </div>
+            </div>
+            {!preview && finishCount < 3 && (
+              <div className="start-strip">
+                <span className="start-spark">
+                  <Sparkles size={17} />
+                </span>
+                <div>
+                  <strong>
+                    {t("In wenigen Schritten zu deinem Auftritt")}
+                  </strong>
+                  <span>
+                    {t(
+                      "Deine Vorlage ist bereit. Jetzt kommt deine persönliche Note.",
+                    )}
+                  </span>
+                </div>
+                <span className="progress-count">
+                  {finishCount}
+                  {t(" von 3")}
+                </span>
+                <div className="progress-track">
+                  <i style={{ width: `${(finishCount / 3) * 100}%` }} />
+                </div>
+                <button
+                  onClick={() => {
+                    setHelp(true);
+                  }}
+                  aria-label={t("Erste Schritte anzeigen")}
+                >
+                  <ArrowRight size={17} />
+                </button>
+              </div>
+            )}
+            {describedIssues.length > 0 && (
+              <div className="error-banner" role="alert">
+                <AlertCircle size={17} />
+                <div>
+                  <strong>{t(validationNotice)}</strong>
+                  <ul>
+                    {describedIssues.map((issue, index) => (
+                      <li key={issue.key + index}>
+                        <button
+                          className="text-button"
+                          onClick={() => showInvalidField(issue.key)}
+                        >
+                          {issue.label}
+                        </button>
+                        {": "}
+                        {issue.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {error &&
+              !(describedIssues.length > 0 && error === validationNotice) && (
+                <div className="error-banner" role="alert">
+                  <AlertCircle size={17} />
+                  <span style={{ whiteSpace: "pre-line" }}>{t(error)}</span>
+                  <button
+                    onClick={() => save().catch((e) => setError(e.message))}
+                  >
+                    {t("Erneut speichern")}
+                  </button>
+                  <button
+                    onClick={() => setError("")}
+                    aria-label={t("Fehlermeldung schließen")}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            <div className="canvas-toolbar">
+              <span>
+                <span className="browser-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <LockKeyhole size={12} />
+                {site.domain ||
+                  site.name
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]/g, "-")
+                    .replace(/-+/g, "-") + ".de"}{" "}
+                {!site.domain && (
+                  <span className="example-domain">
+                    {t("· Beispieladresse")}
+                  </span>
+                )}
+              </span>
+              <span>
+                {mobile ? t("Handy") : t("Desktop")}
+                <ChevronDown size={12} />
+              </span>
+            </div>
+            <div className="stage" ref={stage}>
+              <div
+                className={"paper-wrap " + (mobile ? "phone-paper" : "")}
+                style={{ width: paperWidth * scale }}
+              >
+                <div
+                  className="paper"
+                  style={
+                    {
+                      width: paperWidth,
+                      zoom: Math.max(0.12, scale),
+                    } as CSSProperties
+                  }
+                >
+                  <SiteSurface
+                    site={site}
+                    editing={!preview}
+                    selected={selected}
+                    onSelect={(selection) => {
+                      setSelected(selection);
+                      if (selection) setSectionId(selection.section);
+                    }}
+                    onMove={moveBlock}
+                    mobile={mobile}
+                    onOverflow={reportOverflow}
+                    overflowing={overflowing}
+                    onEditField={(field, section) => {
+                      if (section) setSectionId(section);
+                      editField(field);
+                    }}
+                    onTextEdit={editBlock}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="workspace-bottom">
+              <span>
+                <MousePointer2 size={14} />
+                {preview
+                  ? t("Deine Besucher sehen nur die veröffentlichte Version.")
+                  : mobile
+                    ? t(
+                        "Handyvorschau · Positionen werden auf kleinen Displays gestapelt.",
+                      )
+                    : t("Anklicken zum Bearbeiten · Ziehen zum Verschieben")}
+              </span>
+              <button
+                className="zoom-indicator"
+                onClick={() => setMobile(!mobile)}
+              >
+                <ZoomIn size={14} />
+                {Math.round(scale * 100)} %<ChevronDown size={12} />
+              </button>
+            </div>
+          </main>
+          {!preview && inspectorOpen && (
+            <aside className="inspector">
+              <div className="panel-title">
+                <h2>{t("Element bearbeiten")}</h2>
+                <button
+                  className="icon-button"
+                  onClick={() => setInspectorOpen(false)}
+                  aria-label={t("Eigenschaften schließen")}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="panel-scroll">
+                {block ? (
+                  <>
+                    <div className="panel-section">
+                      <div className="selected-type">
+                        {block.kind === "image" ? (
+                          <ImagePlus size={20} />
+                        ) : block.kind === "button" ? (
+                          <MousePointer2 size={20} />
+                        ) : (
+                          <Type size={20} />
+                        )}
+                        <span>
+                          {block.kind === "image"
+                            ? t("Bild")
+                            : block.kind === "heading"
+                              ? t("Überschrift")
+                              : block.kind === "button"
+                                ? t("Button")
+                                : block.kind === "eyebrow"
+                                  ? t("Kleine Überschrift")
+                                  : t("Text")}
+                        </span>
+                        <span className="selected-dot" />
+                      </div>
+                      {block.kind !== "image" ? (
+                        <>
+                          <label
+                            className="inspector-label"
+                            htmlFor="block-text"
+                          >
+                            {block.kind === "button"
+                              ? t("Beschriftung")
+                              : t("Dein Text")}
+                          </label>
+                          <textarea
+                            aria-invalid={
+                              fieldErrors[blockPath + ".text"]
+                                ? true
+                                : undefined
+                            }
+                            aria-describedby={
+                              fieldErrors[blockPath + ".text"]
+                                ? "block-text-error"
+                                : undefined
+                            }
+                            id="block-text"
+                            data-editor-field="block-text"
+                            data-validation-path={blockPath + ".text"}
+                            className="block-text"
+                            rows={block.kind === "button" ? 2 : 5}
+                            value={block.text}
+                            onChange={(e) =>
+                              mutateBlock({ text: e.target.value })
+                            }
+                          />
+                          {fieldErrors[blockPath + ".text"] && (
+                            <small id="block-text-error" role="alert">
+                              {fieldErrors[blockPath + ".text"]}
+                            </small>
+                          )}
+                          <span className="input-note">
+                            {block.text.includes(namePlaceholder)
+                              ? t("{placeholder} wird zu „{name}“.", {
+                                  placeholder: namePlaceholder,
+                                  name: site.name,
+                                })
+                              : t("Änderungen siehst du sofort.")}
+                          </span>
+                          {needed && selected && (
+                            <p className="contrast-warning overflow-warning">
+                              <AlertCircle size={15} />
+                              <span>
+                                {t(
+                                  "Der Text ist länger als sein Kasten und überdeckt sonst, was darunter steht.",
+                                )}{" "}
+                                <button
+                                  className="text-button"
+                                  onClick={() =>
+                                    fitBlock(selected.section, block.id, needed)
                                   }
-                                : s,
-                            ),
-                          });
-                          select({ section: selected.section, block: copy.id });
-                        }}
-                      >
-                        <Copy size={14} />
-                        {t("Duplizieren")}
-                      </button>
-                      <button
-                        className="icon-button danger"
-                        onClick={() => {
-                          patch({
-                            sections: site.sections.map((s) =>
-                              s.id === selected?.section
-                                ? {
-                                    ...s,
-                                    blocks: s.blocks.filter(
-                                      (b) => b.id !== block.id,
-                                    ),
-                                  }
-                                : s,
-                            ),
-                          });
-                          setSelected(null);
-                        }}
-                        aria-label={t("Element löschen")}
-                      >
-                        <Trash2 size={17} />
-                      </button>
+                                >
+                                  {t("Kasten anpassen")}
+                                </button>
+                              </span>
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="image-thumb">
+                            {block.src && (
+                              <img
+                                src={
+                                  block.src.startsWith("/uploads/")
+                                    ? API + block.src
+                                    : block.src
+                                }
+                                alt={block.alt}
+                              />
+                            )}
+                          </div>
+                          <button
+                            className="secondary full"
+                            data-editor-field="block-image"
+                            onClick={() => uploadInput.current?.click()}
+                            disabled={syncing === "upload"}
+                          >
+                            {syncing === "upload" ? (
+                              <LoaderCircle size={16} className="spin" />
+                            ) : (
+                              <Upload size={16} />
+                            )}
+                            {t("Eigenes Bild hochladen")}
+                          </button>
+                          <input
+                            ref={uploadInput}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            hidden
+                            onChange={(e) => {
+                              upload(e.target.files?.[0]);
+                              e.target.value = "";
+                            }}
+                          />
+                          <p className="small muted">
+                            {t("PNG, JPG oder WebP bis 30 MB · GIF bis 8 MB")}
+                          </p>
+                          <Field
+                            path={blockPath + ".imageShape"}
+                            label={t("Bildform")}
+                          >
+                            <select
+                              value={block.imageShape}
+                              onChange={(event) =>
+                                mutateBlock({
+                                  imageShape: event.target
+                                    .value as Block["imageShape"],
+                                })
+                              }
+                            >
+                              {imageShapes.map((shape) => (
+                                <option key={shape.id} value={shape.id}>
+                                  {t(shape.label)}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field
+                            path={blockPath + ".alt"}
+                            label={t("Bildbeschreibung")}
+                            hint={t(
+                              "Beschreibe kurz den Inhalt für Menschen, die das Bild nicht sehen können.",
+                            )}
+                          >
+                            <input
+                              value={block.alt}
+                              onChange={(e) =>
+                                mutateBlock({ alt: e.target.value })
+                              }
+                            />
+                          </Field>
+                        </>
+                      )}
+                      {block.kind === "button" && (
+                        <Field
+                          path={blockPath + ".href"}
+                          label={t("Ziel des Buttons")}
+                          hint={t("HTTPS-Adresse, #kontakt, mailto: oder tel:")}
+                        >
+                          <input
+                            value={block.href}
+                            onChange={(e) =>
+                              mutateBlock({ href: e.target.value })
+                            }
+                          />
+                        </Field>
+                      )}
+                      {block.kind === "button" &&
+                        selected?.section === "start" &&
+                        site.integrations.bookingUrl && (
+                          <p className="small muted">
+                            {t(
+                              "Dieser Startseiten-Button verwendet deinen Buchungslink aus „Anbindungen“.",
+                            )}
+                          </p>
+                        )}
+                      {block.kind !== "image" && (
+                        <Field
+                          path={blockPath + ".fontSize"}
+                          label={t("Schriftgröße")}
+                        >
+                          <div className="size-field">
+                            <input
+                              aria-label={t("Schriftgröße in Pixeln")}
+                              type="number"
+                              min={12}
+                              max={96}
+                              value={block.fontSize}
+                              onChange={(e) =>
+                                mutateBlock({
+                                  fontSize: Math.max(
+                                    12,
+                                    Math.min(96, Number(e.target.value)),
+                                  ),
+                                })
+                              }
+                            />
+                            <span>px</span>
+                          </div>
+                        </Field>
+                      )}
                     </div>
+                    <div className="panel-section">
+                      <div className="section-heading">
+                        <h3>{t("Position & Größe")}</h3>
+                        <Move size={15} />
+                      </div>
+                      <p className="small muted">
+                        {t("Auf einer 1200 px breiten Arbeitsfläche.")}
+                      </p>
+                      <div className="coordinate-grid">
+                        {(["x", "y", "w", "h"] as const).map((key, i) => (
+                          <Field
+                            key={key}
+                            path={blockPath + "." + key}
+                            label={
+                              [
+                                t("X · horizontal"),
+                                t("Y · vertikal"),
+                                t("Breite"),
+                                t("Höhe"),
+                              ][i]
+                            }
+                          >
+                            <input
+                              type="number"
+                              step={1}
+                              min={key === "w" ? 60 : key === "h" ? 30 : 0}
+                              max={
+                                key === "y" ? 3000 : key === "h" ? 1500 : 1200
+                              }
+                              value={Math.round(block[key])}
+                              onChange={(e) => {
+                                const min =
+                                    key === "w" ? 60 : key === "h" ? 30 : 0,
+                                  max =
+                                    key === "y"
+                                      ? 3000
+                                      : key === "h"
+                                        ? 1500
+                                        : 1200;
+                                mutateBlock({
+                                  [key]: Math.max(
+                                    min,
+                                    Math.min(max, Number(e.target.value)),
+                                  ),
+                                });
+                              }}
+                            />
+                          </Field>
+                        ))}
+                      </div>
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          mutateBlock(
+                            snapBlock(block, {
+                              ...site,
+                              grid: { ...site.grid, snap: true },
+                            }),
+                          );
+                          setNotice("Element am Raster ausgerichtet.");
+                        }}
+                      >
+                        <Columns3 size={14} />
+                        {t("Am Raster ausrichten")}
+                      </button>
+                      <label className="toggle-row compact">
+                        <span>{t("Einrasten aktiv")}</span>
+                        <input
+                          type="checkbox"
+                          checked={site.grid.snap}
+                          onChange={(e) =>
+                            patch({
+                              grid: { ...site.grid, snap: e.target.checked },
+                            })
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="panel-section">
+                      <Field
+                        path={`sections.${site.sections.findIndex((s) => s.id === selected?.section)}.label`}
+                        label={t("Name des Abschnitts")}
+                      >
+                        <input
+                          value={
+                            site.sections.find(
+                              (s) => s.id === selected?.section,
+                            )?.label || ""
+                          }
+                          onChange={(e) =>
+                            patch({
+                              sections: site.sections.map((s) =>
+                                s.id === selected?.section
+                                  ? { ...s, label: e.target.value }
+                                  : s,
+                              ),
+                            })
+                          }
+                        />
+                      </Field>
+                      <div className="element-actions">
+                        <button
+                          className="secondary"
+                          onClick={() => {
+                            if (!selected) return;
+                            const copy = {
+                              ...block,
+                              id: uid(),
+                              x: Math.min(1200 - block.w, block.x + 24),
+                              y: block.y + 24,
+                            };
+                            patch({
+                              sections: site.sections.map((s) =>
+                                s.id === selected.section
+                                  ? {
+                                      ...s,
+                                      height: Math.max(
+                                        s.height,
+                                        copy.y + copy.h + 32,
+                                      ),
+                                      blocks: [...s.blocks, copy],
+                                    }
+                                  : s,
+                              ),
+                            });
+                            select({
+                              section: selected.section,
+                              block: copy.id,
+                            });
+                          }}
+                        >
+                          <Copy size={14} />
+                          {t("Duplizieren")}
+                        </button>
+                        <button
+                          className="icon-button danger"
+                          onClick={() => {
+                            patch({
+                              sections: site.sections.map((s) =>
+                                s.id === selected?.section
+                                  ? {
+                                      ...s,
+                                      blocks: s.blocks.filter(
+                                        (b) => b.id !== block.id,
+                                      ),
+                                    }
+                                  : s,
+                              ),
+                            });
+                            setSelected(null);
+                          }}
+                          aria-label={t("Element löschen")}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty-inspector">
+                    <MousePointer2 size={32} />
+                    <h3>{t("Was möchtest du ändern?")}</h3>
+                    <p>
+                      {t(
+                        "Klicke auf einen Text, ein Bild oder einen Button in deiner Website.",
+                      )}
+                    </p>
                   </div>
-                </>
-              ) : (
-                <div className="empty-inspector">
-                  <MousePointer2 size={32} />
-                  <h3>{t("Was möchtest du ändern?")}</h3>
+                )}
+                <div className="inspector-hint">
+                  <Leaf size={20} />
+                  <strong>{t("Weniger ist oft mehr.")}</strong>
                   <p>
                     {t(
-                      "Klicke auf einen Text, ein Bild oder einen Button in deiner Website.",
+                      "Ein klarer Text und ein gutes Bild sind ein wunderbarer Anfang.",
                     )}
                   </p>
                 </div>
+              </div>
+            </aside>
+          )}
+        </div>
+        {notice && (
+          <div className="toast" role="status">
+            <Check size={17} />
+            {t(notice)}
+            <button
+              onClick={() => setNotice("")}
+              aria-label={t("Hinweis schließen")}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+        {templates && (
+          <Modal
+            title={t("Ein guter Start für deinen Beruf.")}
+            wide
+            onClose={closeTemplates}
+          >
+            <p className="modal-subtitle">
+              {t(
+                "Wähle eine Vorlage. Farben, Texte und Bilder kannst du danach frei anpassen.",
               )}
-              <div className="inspector-hint">
-                <Leaf size={20} />
-                <strong>{t("Weniger ist oft mehr.")}</strong>
+            </p>
+            <div className="template-grid">
+              {careers.map((c) => (
+                <button
+                  key={c.id}
+                  className={
+                    "template-card " +
+                    ((templateChoice ?? site.profession) === c.id
+                      ? "chosen"
+                      : "")
+                  }
+                  aria-pressed={(templateChoice ?? site.profession) === c.id}
+                  disabled={templateBusy}
+                  onClick={() => {
+                    setTemplateChoice(c.id);
+                    setTemplateError("");
+                  }}
+                >
+                  <span className="career-symbol">{c.symbol}</span>
+                  <small>{t(c.category)}</small>
+                  <strong>{t(c.name)}</strong>
+                  <span>
+                    {t("Vorlage verwenden ")}
+                    <ArrowRight size={14} />
+                  </span>
+                  {(templateChoice ?? site.profession) === c.id && (
+                    <Check className="template-check" size={17} />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {templateChoice && (
+              <div className="template-confirmation">
+                <h2>
+                  {t(
+                    careers.find((career) => career.id === templateChoice)!
+                      .name,
+                  )}
+                </h2>
                 <p>
                   {t(
-                    "Ein klarer Text und ein gutes Bild sind ein wunderbarer Anfang.",
+                    "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?",
                   )}
                 </p>
+                {templateError && (
+                  <p className="error-message" role="alert">
+                    {t(templateError)}
+                  </p>
+                )}
+                <div className="template-confirmation-actions">
+                  <button
+                    className="secondary"
+                    disabled={templateBusy}
+                    onClick={closeTemplates}
+                  >
+                    {t("Abbrechen")}
+                  </button>
+                  <button
+                    className="primary"
+                    disabled={templateBusy}
+                    onClick={applyTemplate}
+                  >
+                    {templateBusy && (
+                      <LoaderCircle size={16} className="spin" />
+                    )}
+                    {t(
+                      templateBusy ? "Wird gespeichert …" : "Entwurf ersetzen",
+                    )}
+                  </button>
+                </div>
               </div>
+            )}
+          </Modal>
+        )}
+        {help && (
+          <Modal
+            title={t("Deine Website in drei Schritten.")}
+            onClose={() => setHelp(false)}
+          >
+            <p className="modal-subtitle">
+              {t("Die Vorlage ist dein Anfang. Du machst den Rest persönlich.")}
+            </p>
+            <ol className="help-steps">
+              <li>
+                <span>1</span>
+                <div>
+                  <strong>{t("Mach sie zu deiner.")}</strong>
+                  <p>
+                    {t(
+                      "Unter „Inhalte“ wählst du deinen Beruf und änderst deinen Namen. Klicke Texte oder Bilder direkt in der Vorschau an.",
+                    )}
+                  </p>
+                </div>
+              </li>
+              <li>
+                <span>2</span>
+                <div>
+                  <strong>{t("Gib ihr deinen Stil.")}</strong>
+                  <p>
+                    {t(
+                      "Sechs Farben und deine Schrift findest du unter „Design“. Ziehe Elemente an ihren Platz. Das Raster hilft beim Ausrichten.",
+                    )}
+                  </p>
+                </div>
+              </li>
+              <li>
+                <span>3</span>
+                <div>
+                  <strong>{t("Bereit für deine Besucher.")}</strong>
+                  <p>
+                    {t(
+                      "Ergänze Kontakt und Anbieterlinks. Prüfe die Handyvorschau und klicke auf „Veröffentlichen“.",
+                    )}
+                  </p>
+                </div>
+              </li>
+            </ol>
+            <div className="keyboard-help">
+              <span>
+                <kbd>⌘ / Ctrl</kbd> + <kbd>S</kbd>
+                {t(" speichern")}
+              </span>
+              <span>
+                <kbd>⌘ / Ctrl</kbd> + <kbd>Z</kbd>
+                {t(" rückgängig")}
+              </span>
+              <span>
+                <kbd>↑ ↓ ← →</kbd>
+                {t(" Element verschieben")}
+              </span>
             </div>
-          </aside>
+            <button className="primary full" onClick={() => setHelp(false)}>
+              {t("Los geht’s ")}
+              <ArrowRight size={17} />
+            </button>
+          </Modal>
+        )}
+        {removeTarget && (
+          <Modal
+            title={t("Bereich entfernen?")}
+            onClose={() => setRemoveTarget(null)}
+          >
+            <p>
+              {t(
+                "Den Bereich „{label}“ aus der Website entfernen? Die Änderung wird erst beim Veröffentlichen öffentlich sichtbar und kann rückgängig gemacht werden.",
+                { label: removeTarget.label },
+              )}
+            </p>
+            <div className="modal-actions">
+              <button
+                className="secondary"
+                onClick={() => setRemoveTarget(null)}
+              >
+                {t("Abbrechen")}
+              </button>
+              <button className="primary" onClick={removeSection}>
+                {t("Bereich entfernen")}
+              </button>
+            </div>
+          </Modal>
+        )}
+        {publishOpen && (
+          <Modal
+            title={
+              publishedAt
+                ? t("Deine Änderungen veröffentlichen.")
+                : t("Dein Auftritt kann beginnen.")
+            }
+            onClose={() => setPublishOpen(false)}
+          >
+            <div className="publish-illustration">
+              <Globe size={48} />
+              <span>
+                <Check size={20} />
+              </span>
+            </div>
+            <p className="modal-subtitle">
+              {t(
+                "Dein gespeicherter Entwurf wird zur sichtbaren Website. Die bisherige Version bleibt als Sicherung erhalten.",
+              )}
+            </p>
+            <ul className="publish-checks">
+              <li>
+                <Check size={17} />
+                {t("Desktop- und Handyansicht sind verfügbar.")}
+              </li>
+              <li>
+                {site.contact.email || site.contact.phone ? (
+                  <Check size={17} />
+                ) : (
+                  <AlertCircle size={17} />
+                )}{" "}
+                {site.contact.email || site.contact.phone
+                  ? t("Kontaktdaten sind hinterlegt.")
+                  : t("Kontaktdaten sind noch nicht ergänzt.")}
+              </li>
+              <li>
+                {site.legal.imprint.trim() && site.legal.privacy.trim() ? (
+                  <Check size={17} />
+                ) : (
+                  <AlertCircle size={17} />
+                )}{" "}
+                {site.legal.imprint.trim() && site.legal.privacy.trim()
+                  ? t("Impressum und Datenschutz sind hinterlegt.")
+                  : t(
+                      "Impressum oder Datenschutz fehlen noch. Ohne beides geht die Website nicht online (Einstellungen → Impressum & Datenschutz).",
+                    )}
+              </li>
+            </ul>
+            {error && (
+              <p role="alert" className="error-message">
+                {t(error)}
+              </p>
+            )}
+            <button
+              className="primary full"
+              disabled={
+                publishing ||
+                !site.legal.imprint.trim() ||
+                !site.legal.privacy.trim()
+              }
+              onClick={publish}
+            >
+              {publishing ? (
+                <LoaderCircle size={17} className="spin" />
+              ) : (
+                <Globe size={17} />
+              )}
+              {t("Jetzt veröffentlichen ")}
+              <ArrowUpRight size={17} />
+            </button>
+            {publishedAt && (
+              <a
+                className="text-button centered"
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("Veröffentlichte Website öffnen ")}
+                <ExternalLink size={14} />
+              </a>
+            )}
+            <p className="small muted centered">
+              {t(
+                "Veröffentlicht auf diesem Server. Deine Domain verwaltest du unter Einstellungen.",
+              )}
+            </p>
+          </Modal>
         )}
       </div>
-      {notice && (
-        <div className="toast" role="status">
-          <Check size={17} />
-          {t(notice)}
-          <button
-            onClick={() => setNotice("")}
-            aria-label={t("Hinweis schließen")}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-      {templates && (
-        <Modal
-          title={t("Ein guter Start für deinen Beruf.")}
-          wide
-          onClose={closeTemplates}
-        >
-          <p className="modal-subtitle">
-            {t(
-              "Wähle eine Vorlage. Farben, Texte und Bilder kannst du danach frei anpassen.",
-            )}
-          </p>
-          <div className="template-grid">
-            {careers.map((c) => (
-              <button
-                key={c.id}
-                className={
-                  "template-card " +
-                  ((templateChoice ?? site.profession) === c.id ? "chosen" : "")
-                }
-                aria-pressed={(templateChoice ?? site.profession) === c.id}
-                disabled={templateBusy}
-                onClick={() => {
-                  setTemplateChoice(c.id);
-                  setTemplateError("");
-                }}
-              >
-                <span className="career-symbol">{c.symbol}</span>
-                <small>{t(c.category)}</small>
-                <strong>{t(c.name)}</strong>
-                <span>
-                  {t("Vorlage verwenden ")}
-                  <ArrowRight size={14} />
-                </span>
-                {(templateChoice ?? site.profession) === c.id && (
-                  <Check className="template-check" size={17} />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {templateChoice && (
-            <div className="template-confirmation">
-              <h2>
-                {t(
-                  careers.find((career) => career.id === templateChoice)!.name,
-                )}
-              </h2>
-              <p>
-                {t(
-                  "Diese Vorlage ersetzt deinen aktuellen Entwurf. Du kannst die Änderung mit „Rückgängig“ zurücknehmen. Fortfahren?",
-                )}
-              </p>
-              {templateError && (
-                <p className="error-message" role="alert">
-                  {t(templateError)}
-                </p>
-              )}
-              <div className="template-confirmation-actions">
-                <button
-                  className="secondary"
-                  disabled={templateBusy}
-                  onClick={closeTemplates}
-                >
-                  {t("Abbrechen")}
-                </button>
-                <button
-                  className="primary"
-                  disabled={templateBusy}
-                  onClick={applyTemplate}
-                >
-                  {templateBusy && <LoaderCircle size={16} className="spin" />}
-                  {t(templateBusy ? "Wird gespeichert …" : "Entwurf ersetzen")}
-                </button>
-              </div>
-            </div>
-          )}
-        </Modal>
-      )}
-      {help && (
-        <Modal
-          title={t("Deine Website in drei Schritten.")}
-          onClose={() => setHelp(false)}
-        >
-          <p className="modal-subtitle">
-            {t("Die Vorlage ist dein Anfang. Du machst den Rest persönlich.")}
-          </p>
-          <ol className="help-steps">
-            <li>
-              <span>1</span>
-              <div>
-                <strong>{t("Mach sie zu deiner.")}</strong>
-                <p>
-                  {t(
-                    "Unter „Inhalte“ wählst du deinen Beruf und änderst deinen Namen. Klicke Texte oder Bilder direkt in der Vorschau an.",
-                  )}
-                </p>
-              </div>
-            </li>
-            <li>
-              <span>2</span>
-              <div>
-                <strong>{t("Gib ihr deinen Stil.")}</strong>
-                <p>
-                  {t(
-                    "Sechs Farben und deine Schrift findest du unter „Design“. Ziehe Elemente an ihren Platz. Das Raster hilft beim Ausrichten.",
-                  )}
-                </p>
-              </div>
-            </li>
-            <li>
-              <span>3</span>
-              <div>
-                <strong>{t("Bereit für deine Besucher.")}</strong>
-                <p>
-                  {t(
-                    "Ergänze Kontakt und Anbieterlinks. Prüfe die Handyvorschau und klicke auf „Veröffentlichen“.",
-                  )}
-                </p>
-              </div>
-            </li>
-          </ol>
-          <div className="keyboard-help">
-            <span>
-              <kbd>⌘ / Ctrl</kbd> + <kbd>S</kbd>
-              {t(" speichern")}
-            </span>
-            <span>
-              <kbd>⌘ / Ctrl</kbd> + <kbd>Z</kbd>
-              {t(" rückgängig")}
-            </span>
-            <span>
-              <kbd>↑ ↓ ← →</kbd>
-              {t(" Element verschieben")}
-            </span>
-          </div>
-          <button className="primary full" onClick={() => setHelp(false)}>
-            {t("Los geht’s ")}
-            <ArrowRight size={17} />
-          </button>
-        </Modal>
-      )}
-      {publishOpen && (
-        <Modal
-          title={
-            publishedAt
-              ? t("Deine Änderungen veröffentlichen.")
-              : t("Dein Auftritt kann beginnen.")
-          }
-          onClose={() => setPublishOpen(false)}
-        >
-          <div className="publish-illustration">
-            <Globe size={48} />
-            <span>
-              <Check size={20} />
-            </span>
-          </div>
-          <p className="modal-subtitle">
-            {t(
-              "Dein gespeicherter Entwurf wird zur sichtbaren Website. Die bisherige Version bleibt als Sicherung erhalten.",
-            )}
-          </p>
-          <ul className="publish-checks">
-            <li>
-              <Check size={17} />
-              {t("Desktop- und Handyansicht sind verfügbar.")}
-            </li>
-            <li>
-              {site.contact.email || site.contact.phone ? (
-                <Check size={17} />
-              ) : (
-                <AlertCircle size={17} />
-              )}{" "}
-              {site.contact.email || site.contact.phone
-                ? t("Kontaktdaten sind hinterlegt.")
-                : t("Kontaktdaten sind noch nicht ergänzt.")}
-            </li>
-            <li>
-              {site.legal.imprint.trim() && site.legal.privacy.trim() ? (
-                <Check size={17} />
-              ) : (
-                <AlertCircle size={17} />
-              )}{" "}
-              {site.legal.imprint.trim() && site.legal.privacy.trim()
-                ? t("Impressum und Datenschutz sind hinterlegt.")
-                : t(
-                    "Impressum oder Datenschutz fehlen noch. Ohne beides geht die Website nicht online (Einstellungen → Impressum & Datenschutz).",
-                  )}
-            </li>
-          </ul>
-          {error && (
-            <p role="alert" className="error-message">
-              {t(error)}
-            </p>
-          )}
-          <button
-            className="primary full"
-            disabled={
-              publishing ||
-              !site.legal.imprint.trim() ||
-              !site.legal.privacy.trim()
-            }
-            onClick={publish}
-          >
-            {publishing ? (
-              <LoaderCircle size={17} className="spin" />
-            ) : (
-              <Globe size={17} />
-            )}
-            {t("Jetzt veröffentlichen ")}
-            <ArrowUpRight size={17} />
-          </button>
-          {publishedAt && (
-            <a
-              className="text-button centered"
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("Veröffentlichte Website öffnen ")}
-              <ExternalLink size={14} />
-            </a>
-          )}
-          <p className="small muted centered">
-            {t(
-              "Veröffentlicht auf diesem Server. Für deine eigene Domain siehe README.",
-            )}
-          </p>
-        </Modal>
-      )}
-    </div>
+    </FieldErrors.Provider>
   );
 }
 function MailIcon() {

@@ -32,7 +32,7 @@ test("Both languages cover every message and preserve placeholders", () => {
 });
 
 test("SQLite translations persist, retain edits and serve public English labels without touching content", async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-i18n-"));
+  const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-i18n-"));
   let store = await Store.open(dir);
   store.db.run("UPDATE translations SET en=? WHERE key=?", [
     "My content tools",
@@ -88,10 +88,15 @@ test("SQLite translations persist, retain edits and serve public English labels 
     const html = await (await fetch(base)).text();
     assert.match(html, /<html lang="en">/);
     assert.match(html, /Get in touch/);
-    assert.match(html, /Built with Klarwerk/);
-    assert.match(html, /class="klarwerk-badge"/);
-    assert.match(html, /src="\/images\/klarwerk\.png"/);
-    assert.equal((await fetch(base + "/images/klarwerk.png")).status, 200);
+    assert.match(html, /Built with Klarwarg/);
+    // AGPL-3.0 §13: the public site links to the source code.
+    assert.match(
+      html,
+      /class="klarwarg-credit" href="https:\/\/github\.com\/impiperl\/klarwerk"/,
+    );
+    assert.match(html, /class="klarwarg-badge"/);
+    assert.match(html, /src="\/images\/klarwarg\.png"/);
+    assert.equal((await fetch(base + "/images/klarwarg.png")).status, 200);
     assert.match(html, /Manchmal braucht es/); // Website content is not machine-translated.
     const legal = await (await fetch(base + "/impressum")).text();
     assert.match(legal, /<h1>Legal notice<\/h1>/);
@@ -108,7 +113,7 @@ test("SQLite translations persist, retain edits and serve public English labels 
 });
 
 test("Old admin accounts require password rotation once without losing their hash", async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-rotation-migration-"));
+  const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-rotation-migration-"));
   let store = await Store.open(dir);
   const old = { username: "admin", salt: "test", hash: "test-hash" };
   store.set("admin", JSON.stringify(old));

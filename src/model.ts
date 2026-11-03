@@ -130,7 +130,40 @@ export const serviceSchema = z.object({
 /** Wie die Website spricht: Besucher siezen oder duzen, als eine Person oder als Team. */
 export const voiceSchema = z.object({ formal: z.boolean(), team: z.boolean() });
 export type Voice = z.infer<typeof voiceSchema>;
+export const domainSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .refine((value) => {
+    if (!value) return true;
+    try {
+      const url = new URL(value.includes("://") ? value : "https://" + value);
+      return (
+        url.protocol === "https:" &&
+        url.hostname.includes(".") &&
+        !url.username &&
+        !url.password &&
+        url.pathname === "/" &&
+        !url.search &&
+        !url.hash &&
+        !url.port
+      );
+    } catch {
+      return false;
+    }
+  })
+  .transform((value) =>
+    value
+      ? new URL(value.includes("://") ? value : "https://" + value).origin
+      : "",
+  )
+  .default("");
 export const siteSchema = z.object({
+  domain: domainSchema,
+  hiddenSections: z
+    .array(z.enum(["services", "projects", "contact"]))
+    .max(3)
+    .default([]),
   language: z.enum(["de", "en"]).default("de"),
   name: z.string().min(1).max(120),
   profession: z.string().max(60),
@@ -165,7 +198,6 @@ export const siteSchema = z.object({
         blocks: z.array(blockSchema).max(80),
       }),
     )
-    .min(1)
     .max(20),
   services: z.array(serviceSchema).max(100),
   contact: z.object({
@@ -193,6 +225,24 @@ export const siteSchema = z.object({
     ]),
     bookingUrl: safeLink,
     linkedinUrl: safeLink,
+    appStoreUrl: z
+      .string()
+      .max(2000)
+      .refine((value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return (
+            url.protocol === "https:" &&
+            url.hostname === "apps.apple.com" &&
+            !url.username &&
+            !url.password
+          );
+        } catch {
+          return false;
+        }
+      })
+      .default(""),
     githubUser: z.string().max(39),
     showRepos: z.boolean(),
   }),
@@ -710,6 +760,7 @@ export function createSite(profession = "psychiatry", voice?: Voice): Site {
       provider: c.provider,
       bookingUrl: "",
       linkedinUrl: "",
+      appStoreUrl: "",
       githubUser: "",
       showRepos: true,
     },
@@ -785,4 +836,47 @@ export function snapBlock(block: Block, site: Site): Block {
       Math.max(0, snap ? Math.round(block.y / row) * row : block.y),
     ),
   };
+}
+
+/** Keep generated links usable when a destination area has been removed. */
+function availableAnchor(href: string, site: Site): boolean {
+  if (href === "#site-content") return true;
+  if (href === "#kontakt") return !site.hiddenSections.includes("contact");
+  if (href === "#leistungen") return !site.hiddenSections.includes("services");
+  if (href === "#projekte")
+    return (
+      !site.hiddenSections.includes("projects") &&
+      site.integrations.showRepos &&
+      site.repos.length > 0
+    );
+  return site.sections.some((section) => "#" + section.id === href);
+}
+export function contactLink(site: Site): string {
+  if (!site.hiddenSections.includes("contact")) return "#kontakt";
+  const booking = site.integrations.bookingUrl;
+  if (booking && (!booking.startsWith("#") || availableAnchor(booking, site)))
+    return booking;
+  return site.contact.email
+    ? "mailto:" + site.contact.email
+    : site.contact.phone
+      ? "tel:" + site.contact.phone.replace(/[^+\d]/g, "")
+      : "";
+}
+export function resolveSiteLink(href: string, site: Site): string {
+  if (href === "#kontakt") return contactLink(site);
+  if (href === "#leistungen")
+    return site.hiddenSections.includes("services") ? "" : href;
+  if (href === "#projekte")
+    return site.hiddenSections.includes("projects") ||
+      !site.integrations.showRepos ||
+      !site.repos.length
+      ? ""
+      : href;
+  if (
+    href.startsWith("#") &&
+    href !== "#site-content" &&
+    !site.sections.some((section) => "#" + section.id === href)
+  )
+    return "";
+  return href;
 }

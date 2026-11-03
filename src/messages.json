@@ -51,9 +51,9 @@
     "de": "Einrichtungscode",
     "en": "Setup code"
   },
-  "Steht in der Konsole, in der der Klarwerk-Server läuft.": {
-    "de": "Steht in der Konsole, in der der Klarwerk-Server läuft.",
-    "en": "Shown in the console running the Klarwerk server."
+  "Steht in der Konsole, in der der Klarwarg-Server läuft.": {
+    "de": "Steht in der Konsole, in der der Klarwarg-Server läuft.",
+    "en": "Shown in the console running the Klarwarg server."
   },
   "Passwort": {
     "de": "Passwort",
@@ -99,9 +99,9 @@
     "de": "Website gestalten",
     "en": "Build website"
   },
-  "Klarwerk · Deine Website gestalten": {
-    "de": "Klarwerk · Deine Website gestalten",
-    "en": "Klarwerk · Build your website"
+  "Klarwarg · Deine Website gestalten": {
+    "de": "Klarwarg · Deine Website gestalten",
+    "en": "Klarwarg · Build your website"
   },
   "Server starten": {
     "de": "Server starten",
@@ -111,9 +111,9 @@
     "de": "Erneut versuchen",
     "en": "Try again"
   },
-  "Klarwerk wird geladen …": {
-    "de": "Klarwerk wird geladen …",
-    "en": "Loading Klarwerk …"
+  "Klarwarg wird geladen …": {
+    "de": "Klarwarg wird geladen …",
+    "en": "Loading Klarwarg …"
   },
   "Gespeichert": {
     "de": "Gespeichert",
@@ -591,9 +591,9 @@
     "de": "Sicherung als Entwurf geladen.",
     "en": "Backup loaded as a draft."
   },
-  "Diese Datei ist keine gültige Klarwerk-Sicherung.": {
-    "de": "Diese Datei ist keine gültige Klarwerk-Sicherung.",
-    "en": "This file is not a valid Klarwerk backup."
+  "Diese Datei ist keine gültige Klarwarg-Sicherung.": {
+    "de": "Diese Datei ist keine gültige Klarwarg-Sicherung.",
+    "en": "This file is not a valid Klarwarg backup."
   },
   "Impressum & Datenschutz": {
     "de": "Impressum & Datenschutz",
@@ -1271,9 +1271,9 @@
     "de": "Deine Kontaktdaten ergänzt du unter „Inhalte“.",
     "en": "Add your contact details under Content."
   },
-  "Mit Klarwerk gestaltet": {
-    "de": "Mit Klarwerk gestaltet",
-    "en": "Built with Klarwerk"
+  "Mit Klarwarg gestaltet": {
+    "de": "Mit Klarwarg gestaltet",
+    "en": "Built with Klarwarg"
   },
   "Bild auswählen": {
     "de": "Bild auswählen",
@@ -1558,5 +1558,149 @@
   "Kreis": {
     "de": "Kreis",
     "en": "Circle"
+  },
+  "Dein App-Store-Eintrag": {
+    "de": "Dein App-Store-Eintrag",
+    "en": "Your App Store listing"
+  },
+  "Füge den öffentlichen Link zu deiner App im Apple App Store ein.": {
+    "de": "Füge den öffentlichen Link zu deiner App im Apple App Store ein.",
+    "en": "Add the public link to your app in the Apple App Store."
+  },
+  "Noch nicht gespeichert. Bitte korrigiere die markierten Felder.": {
+    "de": "Noch nicht gespeichert. Bitte korrigiere die markierten Felder.",
+    "en": "Not saved yet. Please correct the marked fields."
+  },
+  "Website-Einstellungen": {
+    "de": "Website-Einstellungen",
+    "en": "Website settings"
+  },
+  "Beruf": {
+    "de": "Beruf",
+    "en": "Profession"
+  },
+  "Spaltenabstand": {
+    "de": "Spaltenabstand",
+    "en": "Column gap"
+  },
+  "Zeilenraster": {
+    "de": "Zeilenraster",
+    "en": "Row grid"
+  },
+  "Titel": {
+    "de": "Titel",
+    "en": "Title"
+  },
+  "Leistung {number}: {field}": {
+    "de": "Leistung {number}: {field}",
+    "en": "Service {number}: {field}"
+  },
+  "Abschnitt {number}: {field}": {
+    "de": "Abschnitt {number}: {field}",
+    "en": "Section {number}: {field}"
+  },
+  "Abschnitt {section}, Element {block}: {field}": {
+    "de": "Abschnitt {section}, Element {block}: {field}",
+    "en": "Section {section}, element {block}: {field}"
+  },
+  "Bitte prüfe diese Angabe.": {
+    "de": "Bitte prüfe diese Angabe.",
+    "en": "Please check this value."
+  },
+  "Bitte höchstens {maximum} Zeichen eingeben.": {
+    "de": "Bitte höchstens {maximum} Zeichen eingeben.",
+    "en": "Please enter no more than {maximum} characters."
+  },
+  "Bitte mindestens {minimum} Zeichen eingeben.": {
+    "de": "Bitte mindestens {minimum} Zeichen eingeben.",
+    "en": "Please enter at least {minimum} characters."
+  },
+  "Bitte eine gültige E-Mail-Adresse eingeben, zum Beispiel name@firma.at.": {
+    "de": "Bitte eine gültige E-Mail-Adresse eingeben, zum Beispiel name@firma.at.",
+    "en": "Please enter a valid email address, for example name@company.com."
+  },
+  "Bitte den vollständigen LinkedIn-Link mit https:// eingeben, zum Beispiel https://www.linkedin.com/in/dein-name. Leerzeichen am Anfang oder Ende entfernen.": {
+    "de": "Bitte den vollständigen LinkedIn-Link mit https:// eingeben, zum Beispiel https://www.linkedin.com/in/dein-name. Leerzeichen am Anfang oder Ende entfernen.",
+    "en": "Please enter the full LinkedIn link starting with https://, for example https://www.linkedin.com/in/your-name. Remove leading or trailing spaces."
+  },
+  "Bitte einen vollständigen App-Store-Link mit https://apps.apple.com/ eingeben.": {
+    "de": "Bitte einen vollständigen App-Store-Link mit https://apps.apple.com/ eingeben.",
+    "en": "Please enter a full App Store link starting with https://apps.apple.com/."
+  },
+  "Bitte einen Link mit https://, mailto:, tel: oder ein Abschnittsziel wie #kontakt eingeben.": {
+    "de": "Bitte einen Link mit https://, mailto:, tel: oder ein Abschnittsziel wie #kontakt eingeben.",
+    "en": "Please enter a link starting with https://, mailto:, tel:, or a section target such as #kontakt."
+  },
+  "Bitte einen gültigen Wert wählen.": {
+    "de": "Bitte einen gültigen Wert wählen.",
+    "en": "Please choose a valid value."
+  },
+  "Der Wert darf höchstens {maximum} sein.": {
+    "de": "Der Wert darf höchstens {maximum} sein.",
+    "en": "The value must be no greater than {maximum}."
+  },
+  "Der Wert muss mindestens {minimum} sein.": {
+    "de": "Der Wert muss mindestens {minimum} sein.",
+    "en": "The value must be at least {minimum}."
+  },
+  "Die Sicherung enthält ungültige Angaben:": {
+    "de": "Die Sicherung enthält ungültige Angaben:",
+    "en": "The backup contains invalid values:"
+  },
+  "Die Datei enthält kein gültiges JSON. Bitte eine unveränderte JSON-Sicherung auswählen.": {
+    "de": "Die Datei enthält kein gültiges JSON. Bitte eine unveränderte JSON-Sicherung auswählen.",
+    "en": "This file does not contain valid JSON. Please select an unmodified JSON backup."
+  },
+  "Eigene Domain": {
+    "de": "Eigene Domain",
+    "en": "Own domain"
+  },
+  "Zum Beispiel meine-domain.at. Die Domain wird mit dem Entwurf veröffentlicht und für Website-Links verwendet. DNS, HTTPS und die Weiterleitung auf diesen Server müssen beim Hosting eingerichtet sein.": {
+    "de": "Zum Beispiel meine-domain.at. Die Domain wird mit dem Entwurf veröffentlicht und für Website-Links verwendet. DNS, HTTPS und die Weiterleitung auf diesen Server müssen beim Hosting eingerichtet sein.",
+    "en": "For example example.com. The domain is published with the draft and used for website links. DNS, HTTPS and forwarding to this server must be configured with your hosting."
+  },
+  "Bitte eine Domain wie meine-domain.at oder https://meine-domain.at eingeben, ohne Pfad, Port oder Zugangsdaten.": {
+    "de": "Bitte eine Domain wie meine-domain.at oder https://meine-domain.at eingeben, ohne Pfad, Port oder Zugangsdaten.",
+    "en": "Please enter a domain such as example.com or https://example.com, without a path, port or credentials."
+  },
+  "Bereich {label} entfernen": {
+    "de": "Bereich {label} entfernen",
+    "en": "Remove {label} section"
+  },
+  "Bereich {label} wieder einfügen": {
+    "de": "Bereich {label} wieder einfügen",
+    "en": "Restore {label} section"
+  },
+  "Bereich entfernen?": {
+    "de": "Bereich entfernen?",
+    "en": "Remove section?"
+  },
+  "Bereich entfernen": {
+    "de": "Bereich entfernen",
+    "en": "Remove section"
+  },
+  "Den Bereich „{label}“ aus der Website entfernen? Die Änderung wird erst beim Veröffentlichen öffentlich sichtbar und kann rückgängig gemacht werden.": {
+    "de": "Den Bereich „{label}“ aus der Website entfernen? Die Änderung wird erst beim Veröffentlichen öffentlich sichtbar und kann rückgängig gemacht werden.",
+    "en": "Remove the “{label}” section from the website? The change becomes public only after publishing and can be undone."
+  },
+  "Veröffentlicht auf diesem Server. Deine Domain verwaltest du unter Einstellungen.": {
+    "de": "Veröffentlicht auf diesem Server. Deine Domain verwaltest du unter Einstellungen.",
+    "en": "Published on this server. Manage your domain under Settings."
+  },
+  "Quellcode": {
+    "de": "Quellcode",
+    "en": "Source code"
+  },
+  "Quellcode ansehen": {
+    "de": "Quellcode ansehen",
+    "en": "View source code"
+  },
+  "Quellcode von Klarwarg": {
+    "de": "Quellcode von Klarwarg",
+    "en": "Klarwarg source code"
+  },
+  "Klarwarg ist freie Software unter der GNU Affero General Public License 3.0.": {
+    "de": "Klarwarg ist freie Software unter der GNU Affero General Public License 3.0.",
+    "en": "Klarwarg is free software under the GNU Affero General Public License 3.0."
   }
 }

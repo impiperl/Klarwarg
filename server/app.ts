@@ -537,7 +537,9 @@ export async function createApp(
   // Öffentliche Website: fertiges HTML vom Server, ohne JavaScript im Browser.
   const origin = (req: Request) =>
     (
-      process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`
+      store.publicSite()?.domain ||
+      process.env.PUBLIC_ORIGIN ||
+      `${req.protocol}://${req.get("host")}`
     ).replace(/\/+$/, "");
   const publicPage = (page: PublicPage) => (req: Request, res: Response) => {
     res.setHeader(

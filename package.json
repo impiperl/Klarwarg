@@ -1,8 +1,9 @@
 {
-  "name": "klarwerk",
+  "name": "klarwarg",
   "version": "0.1.0",
   "description": "A website builder for independent professionals with an integrated admin area and local SQLite storage.",
   "private": true,
+  "license": "AGPL-3.0-only",
   "main": "index.ts",
   "type": "module",
   "scripts": {
@@ -11,6 +12,7 @@
     "admin:create": "tsx server/create-admin.ts",
     "web": "expo start --web --port 8091",
     "build": "expo export --platform web",
+    "build:server": "esbuild server/index.ts server/create-admin.ts --bundle --platform=node --format=esm --target=node20 --jsx=automatic --outdir=server-build --out-extension:.js=.mjs --external:sql.js --log-level=warning \"--banner:js=import{createRequire as __cr}from'node:module';const require=__cr(import.meta.url);\"",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:browser": "tsx tests/browser.ts",
@@ -35,6 +37,7 @@
     "@types/react-dom": "~19.2.3",
     "@types/sql.js": "^1.4.9",
     "concurrently": "^9.2.0",
+    "esbuild": "0.28.2",
     "playwright": "^1.60.0",
     "prettier": "^3.9.10",
     "tsx": "^4.20.0",

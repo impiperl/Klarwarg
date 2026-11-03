@@ -15,6 +15,38 @@ import {
 } from "../src/model.ts";
 import { githubRepos } from "../server/github.ts";
 
+test("App Store: alte Entwürfe bleiben gültig und nur öffentliche Apple-HTTPS-Links sind erlaubt", () => {
+  const site = createSite("developer");
+  const { appStoreUrl, ...legacy } = site.integrations;
+  assert.equal(
+    siteSchema.parse({ ...site, integrations: legacy }).integrations
+      .appStoreUrl,
+    "",
+  );
+  const valid = "https://apps.apple.com/at/app/example/id123456789";
+  assert.equal(
+    siteSchema.parse({
+      ...site,
+      integrations: { ...legacy, appStoreUrl: valid },
+    }).integrations.appStoreUrl,
+    valid,
+  );
+  for (const url of [
+    "javascript:alert(1)",
+    "http://apps.apple.com/app/id1",
+    "https://apps.apple.com.evil.test/app/id1",
+    "https://evil.test/app/id1",
+    "https://user:pass@apps.apple.com/app/id1",
+  ])
+    assert.equal(
+      siteSchema.safeParse({
+        ...site,
+        integrations: { ...legacy, appStoreUrl: url },
+      }).success,
+      false,
+    );
+});
+
 test("Berufsvorlagen und Koordinaten sind gültig; aktive Inhalte werden abgewiesen", () => {
   for (const career of careers)
     assert.equal(siteSchema.parse(createSite(career.id)).profession, career.id);
@@ -158,7 +190,7 @@ test("GitHub importiert alle Seiten und nur öffentliche nutzbare Repositories",
   );
 });
 test("Adminschutz, Entwurf/Live-Trennung, Konflikte, Wiederherstellung, Uploads und SQLite-Neustart", async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-test-"));
+  const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-test-"));
   const { app, store } = await createApp(dir);
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -364,7 +396,7 @@ test("Adminschutz, Entwurf/Live-Trennung, Konflikte, Wiederherstellung, Uploads 
   }
 });
 test("Über Proxy oder Domain braucht die Einrichtung den Code aus der Konsole", async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-setup-"));
+  const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-setup-"));
   const { app, store, setupCode } = await createApp(dir);
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));

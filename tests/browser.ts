@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
 
-const dir = mkdtempSync(path.join(tmpdir(), "klarwerk-browser-"));
+const dir = mkdtempSync(path.join(tmpdir(), "klarwarg-browser-"));
 const { app, store } = await createApp(dir, {
   staticDir: path.resolve("dist"),
   request: (async (url: any, options: any) => {
@@ -20,6 +20,17 @@ const { app, store } = await createApp(dir, {
             description: "Mein öffentliches Projekt",
             language: "TypeScript",
             stargazers_count: 7,
+            fork: false,
+            private: false,
+            disabled: false,
+          },
+          {
+            id: 2,
+            name: "zweites-projekt",
+            html_url: "https://github.com/octocat/second-project",
+            description: "Ein weiteres Projekt",
+            language: "TypeScript",
+            stargazers_count: 0,
             fork: false,
             private: false,
             disabled: false,
@@ -49,7 +60,7 @@ try {
   await page.goto(base + "/admin");
   await page.getByTestId("language-switch").selectOption("en");
   await page.getByRole("heading", { name: "Good to see you." }).waitFor();
-  await page.locator('.wordmark img[src="/images/klarwerk.png"]').waitFor();
+  await page.locator('.wordmark img[src="/images/klarwarg.png"]').waitFor();
   await page.reload();
   await page.getByRole("heading", { name: "Good to see you." }).waitFor();
   assert.equal(await page.locator("html").getAttribute("lang"), "en");
@@ -155,6 +166,68 @@ try {
   await page.getByLabel("Raster einblenden", { exact: false }).check();
   assert.equal(await page.locator(".grid-overlay span").count(), 12);
   await page.getByLabel("Raster einblenden", { exact: false }).uncheck();
+  // Canvas clicks open the matching field, including closed panels and details.
+  await page.locator(".site-brand small").click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="tagline"]',
+  );
+  await page.locator(".service-grid article").first().locator("p").click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="service-0-description"]',
+  );
+  await page.locator('.site-contact a[href^="mailto:"]').click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="contact-email"]',
+  );
+  await page.locator(".site-header-cta").click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="integration-booking"]',
+  );
+  await page
+    .locator(".site-footer")
+    .getByRole("button", { name: "Impressum", exact: true })
+    .click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="legal-imprint"]',
+  );
+  await page.getByRole("button", { name: "Eigenschaften schließen" }).click();
+  await page.locator(".block-image").first().click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    '[data-editor-field="block-image"]',
+  );
+  await page.locator(".block-heading").first().click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector) === document.activeElement,
+    "#block-text",
+  );
+  await page.getByLabel("X · horizontal").focus();
+  await page.locator(".block-heading").first().click();
+  await page.waitForFunction(() => document.activeElement?.id === "block-text");
+  await page.locator(".site-brand small").focus();
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") === "tagline",
+  );
+  const navigationItem = page.locator(".site-header nav a").first();
+  await navigationItem.click();
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") ===
+      "section-label",
+  );
+  assert.equal(
+    await page.locator('[data-editor-field="section-label"]').inputValue(),
+    await navigationItem.textContent(),
+  );
+  await page.locator(".block-heading").first().click();
+  await page.waitForFunction(() => document.activeElement?.id === "block-text");
   await page.locator("#block-text").fill("Hallo Welt.\nMeine eigene Website.");
   await page.getByLabel("X · horizontal").fill("96");
   await page.waitForTimeout(1400);
@@ -336,14 +409,14 @@ try {
     viewport: { width: 1440, height: 1000 },
   });
   await live.goto(base);
-  const logo = live.locator('.klarwerk-badge img[alt="Klarwerk"]');
+  const logo = live.locator('.klarwarg-badge img[alt="Klarwarg"]');
   await logo.waitFor();
   assert.ok(
     await logo.evaluate(
       (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
     ),
   );
-  const badge = await live.locator(".klarwerk-badge").boundingBox();
+  const badge = await live.locator(".klarwarg-badge").boundingBox();
   assert.ok(
     badge && badge.x <= 16 && badge.y + badge.height >= 980,
     "Brand mark is in the bottom-left corner",
@@ -447,6 +520,16 @@ try {
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   );
+  await page.locator(".block-heading").first().click();
+  await page.waitForFunction(() => document.activeElement?.id === "block-text");
+  await page
+    .getByRole("button", { name: "Eigenschaften schließen", exact: true })
+    .click();
+  await page.locator(".site-brand small").click();
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") === "tagline",
+  );
   await page.getByRole("button", { name: "Kurze Hilfe", exact: true }).click();
   await page.getByRole("dialog").waitFor();
   await page.keyboard.press("Escape");
@@ -519,8 +602,172 @@ try {
       .count(),
     0,
   );
+  const appStoreUrl = "https://apps.apple.com/at/app/example/id123456789";
+  await page
+    .getByLabel("Dein App-Store-Eintrag", { exact: true })
+    .fill(appStoreUrl);
+  const appStoreLink = page.locator(`.site-contact a[href="${appStoreUrl}"]`);
+  await appStoreLink.click();
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") ===
+      "integration-appstore",
+  );
+  await page.waitForTimeout(1400);
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site
+      .integrations.appStoreUrl,
+    appStoreUrl,
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  assert.equal(
+    await page
+      .getByLabel("Dein App-Store-Eintrag", { exact: true })
+      .inputValue(),
+    appStoreUrl,
+  );
+  await page.getByTestId("language-switch").selectOption("en");
+  await page.getByLabel("Your App Store listing", { exact: true }).waitFor();
+  await page.getByTestId("language-switch").selectOption("de");
+  // Invalid links are explained at the field, block saving, and can be located from the summary.
+  const linkedinInput = page.getByLabel("Dein öffentliches LinkedIn-Profil", {
+    exact: true,
+  });
+  const storedBeforeInvalid = (
+    await (await page.request.get(base + "/api/draft")).json()
+  ).site;
+  await linkedinInput.fill("www.linkedin.com/in/perl-m-iris");
+  assert.equal(await linkedinInput.getAttribute("aria-invalid"), "true");
+  const errorId = (await linkedinInput.getAttribute("aria-describedby"))!;
+  assert.match(
+    await page.locator(`[id="${errorId}"]`).innerText(),
+    /https:\/\/www.linkedin.com\/in\//,
+  );
+  await page.waitForTimeout(1400);
+  assert.deepEqual(
+    (await (await page.request.get(base + "/api/draft")).json()).site,
+    storedBeforeInvalid,
+  );
+  assert.doesNotMatch(
+    await page.locator(".error-banner").innerText(),
+    /"code"|"custom"|Zod/,
+  );
+  await page.getByRole("button", { name: "Design", exact: true }).click();
+  await page
+    .locator(".error-banner")
+    .getByRole("button", {
+      name: "Dein öffentliches LinkedIn-Profil",
+      exact: true,
+    })
+    .click();
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") ===
+      "integration-linkedin",
+  );
+  await page.getByTestId("language-switch").selectOption("en");
+  await page
+    .getByText(/Please enter the full LinkedIn link starting/)
+    .first()
+    .waitFor();
+  await page.getByTestId("language-switch").selectOption("de");
+  await linkedinInput.fill("https://www.linkedin.com/in/perl-m-iris");
+  await page.waitForTimeout(1400);
+  assert.equal(await linkedinInput.getAttribute("aria-invalid"), null);
+  assert.equal(await page.locator(".error-banner").count(), 0);
+  // Invalid imports explain the exact field without replacing the existing draft.
+  await page
+    .getByRole("button", { name: "Einstellungen", exact: true })
+    .click();
+  const importFile = page.locator(
+    'input[type="file"][accept="application/json,.json"]',
+  );
+  const beforeImport = (
+    await (await page.request.get(base + "/api/draft")).json()
+  ).site;
+  const invalidBackup = {
+    ...beforeImport,
+    integrations: {
+      ...beforeImport.integrations,
+      linkedinUrl: "www.linkedin.com/in/perl-m-iris",
+    },
+  };
+  await importFile.setInputFiles({
+    name: "invalid-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(invalidBackup)),
+  });
+  await page
+    .locator(".error-banner")
+    .getByText(/Die Sicherung enthält ungültige Angaben/)
+    .waitFor();
+  assert.match(
+    await page.locator(".error-banner").innerText(),
+    /LinkedIn.*https:\/\//,
+  );
+  assert.deepEqual(
+    (await (await page.request.get(base + "/api/draft")).json()).site,
+    beforeImport,
+  );
+  await importFile.setInputFiles({
+    name: "broken.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{ broken"),
+  });
+  await page
+    .locator(".error-banner")
+    .getByText(/Die Datei enthält kein gültiges JSON/)
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Fehlermeldung schließen", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  await linkedinInput.fill("");
   await page.getByLabel("GitHub-Benutzername", { exact: true }).fill("octocat");
   await page.getByRole("button", { name: "Repositories importieren" }).click();
+  await page.getByText("2 Repositories importiert", { exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "zweites-projekt: Entfernen", exact: true })
+    .click();
+  await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
+  assert.equal(await page.locator(".repo-grid article").count(), 1);
+  assert.equal(
+    await page
+      .locator('.repo-grid a[href="https://github.com/octocat/Hello-World"]')
+      .count(),
+    1,
+  );
+  assert.equal(await page.locator('[data-repo="2"]').count(), 0);
+  await page.getByRole("button", { name: "Rückgängig", exact: true }).click();
+  await page
+    .getByRole("button", { name: "zweites-projekt: Entfernen", exact: true })
+    .waitFor();
+  await page.getByRole("button", { name: "Wiederholen", exact: true }).click();
+  await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
+  await page.waitForTimeout(1400);
+  assert.deepEqual(
+    (await (await page.request.get(base + "/api/draft")).json()).site.repos.map(
+      (repo: any) => repo.id,
+    ),
+    [1],
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
+  await page
+    .getByRole("button", { name: "mein-projekt: Entfernen", exact: true })
+    .waitFor();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "zweites-projekt: Entfernen", exact: true })
+      .count(),
+    0,
+  );
+  await page
+    .getByRole("button", { name: "mein-projekt: Entfernen", exact: true })
+    .click();
+  assert.equal(await page.locator(".repo-grid article").count(), 0);
+  await page.getByRole("button", { name: "Rückgängig", exact: true }).click();
   await page.getByText("1 Repositories importiert", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Inhalte", exact: true }).click();
   await page.locator(".template-choice").click();
@@ -562,6 +809,25 @@ try {
     .waitFor();
   await page.getByRole("button", { name: "Abbrechen", exact: true }).click();
   await page.unroute("**/api/draft");
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Bereich GitHub-Projekte entfernen",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Bereich entfernen", exact: true })
+    .click();
+  assert.equal(await page.locator(".site-projects").count(), 0);
+  await page
+    .getByRole("button", {
+      name: "Bereich GitHub-Projekte wieder einfügen",
+      exact: true,
+    })
+    .click();
+  assert.equal(await page.locator(".site-projects").count(), 1);
   // An import started for the previous profession must not repopulate the new draft.
   let finishOldImport!: () => Promise<void>;
   const oldImportStarted = new Promise<void>((resolve) => {
@@ -620,6 +886,15 @@ try {
   assert.equal(lawDraft.integrations.githubUser, "");
   assert.equal(lawDraft.integrations.bookingUrl, "");
   assert.equal(lawDraft.integrations.linkedinUrl, "");
+  assert.equal(lawDraft.integrations.appStoreUrl, "");
+  assert.equal(
+    await page.getByLabel("Dein App-Store-Eintrag", { exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await page.locator(`.site-contact a[href="${appStoreUrl}"]`).count(),
+    0,
+  );
   await page.reload();
   await page.getByRole("button", { name: "Anbindungen", exact: true }).click();
   assert.equal(
@@ -627,6 +902,161 @@ try {
     0,
   );
   assert.equal(await page.getByLabel("Dein Anbieter").inputValue(), "ra-micro");
+  // Domain is editable, validated, persisted and published; existing areas can be removed.
+  await page
+    .getByRole("button", { name: "Einstellungen", exact: true })
+    .click();
+  const domainInput = page.getByLabel("Eigene Domain", { exact: true });
+  await domainInput.fill("https://my-domain.at/path");
+  assert.equal(await domainInput.getAttribute("aria-invalid"), "true");
+  await page
+    .getByText(/Bitte eine Domain wie meine-domain.at/)
+    .first()
+    .waitFor();
+  await domainInput.fill("my-domain.at");
+  await page.getByTestId("language-switch").selectOption("en");
+  await page.getByLabel("Own domain", { exact: true }).waitFor();
+  await page.getByTestId("language-switch").selectOption("de");
+  await page.waitForTimeout(1400);
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site.domain,
+    "https://my-domain.at",
+  );
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Einstellungen", exact: true })
+    .click();
+  assert.equal(await domainInput.inputValue(), "https://my-domain.at");
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  const initialSections = (
+    await (await page.request.get(base + "/api/draft")).json()
+  ).site.sections;
+  const lastLabel = initialSections[initialSections.length - 1].label;
+  await page
+    .getByRole("button", {
+      name: `Bereich ${lastLabel} entfernen`,
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Abbrechen", exact: true })
+    .click();
+  assert.equal(await page.locator(".site-canvas").count(), 2);
+  await page
+    .getByRole("button", {
+      name: `Bereich ${lastLabel} entfernen`,
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Bereich entfernen", exact: true })
+    .click();
+  assert.equal(await page.locator(".site-canvas").count(), 1);
+  await page.getByRole("button", { name: "Rückgängig", exact: true }).click();
+  assert.equal(await page.locator(".site-canvas").count(), 2);
+  await page.getByRole("button", { name: "Wiederholen", exact: true }).click();
+  assert.equal(await page.locator(".site-canvas").count(), 1);
+  await page
+    .getByRole("button", {
+      name: `Bereich ${initialSections[0].label} entfernen`,
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Bereich entfernen", exact: true })
+    .click();
+  assert.equal(await page.locator(".site-canvas").count(), 0);
+  await page.waitForTimeout(1400);
+  await page.reload();
+  await page.getByRole("button", { name: "Raster", exact: true }).click();
+  assert.equal(
+    await page.getByLabel("Abschnittshöhe (px)", { exact: true }).count(),
+    0,
+  );
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  await page.getByRole("button", { name: "Überschrift", exact: true }).click();
+  await page.locator("#block-text").fill("Neue Startseite");
+  assert.equal(await page.locator(".site-canvas").count(), 1);
+  for (const label of ["Leistungen", "Kontakt"]) {
+    await page
+      .getByRole("button", { name: `Bereich ${label} entfernen`, exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Bereich entfernen", exact: true })
+      .click();
+  }
+  assert.equal(await page.locator(".site-services, .site-contact").count(), 0);
+  assert.equal(
+    await page
+      .locator(
+        '.site-header nav a[href="#leistungen"], .site-header nav a[href="#kontakt"]',
+      )
+      .count(),
+    0,
+  );
+  await live.reload();
+  assert.equal(
+    await live.locator(".site-contact").count(),
+    1,
+    "draft deletion must not affect published site",
+  );
+  await page.waitForTimeout(1400);
+  await page.reload();
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  assert.equal(await page.locator(".site-services, .site-contact").count(), 0);
+  await page
+    .getByRole("button", {
+      name: "Bereich Kontakt wieder einfügen",
+      exact: true,
+    })
+    .click();
+  assert.equal(await page.locator(".site-contact").count(), 1);
+  await page.getByRole("button", { name: "Rückgängig", exact: true }).click();
+  assert.equal(await page.locator(".site-contact").count(), 0);
+  await page
+    .getByRole("button", { name: "Einstellungen", exact: true })
+    .click();
+  await page.getByText("Impressum & Datenschutz", { exact: true }).click();
+  await page.getByLabel("Impressum", { exact: true }).fill("Test Impressum");
+  await page
+    .getByLabel("Datenschutzerklärung", { exact: true })
+    .fill("Test Datenschutz");
+  await page
+    .getByRole("button", { name: "Veröffentlichen", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Jetzt veröffentlichen" }).click();
+  await page
+    .getByText("Deine Website ist veröffentlicht.", { exact: true })
+    .waitFor();
+  await live.reload();
+  assert.equal(await live.locator(".site-services, .site-contact").count(), 0);
+  assert.equal(
+    await live.locator('link[rel="canonical"]').getAttribute("href"),
+    "https://my-domain.at/",
+  );
+  assert.match(
+    await (await page.request.get(base + "/sitemap.xml")).text(),
+    /https:\/\/my-domain.at/,
+  );
+  // A profession/template change must retain the configured website domain.
+  await page.getByRole("button", { name: "Inhalte", exact: true }).click();
+  await page.locator(".template-choice").click();
+  await page
+    .locator(".template-card")
+    .filter({ hasText: "Softwareentwicklung" })
+    .click();
+  await page
+    .getByRole("button", { name: "Entwurf ersetzen", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site.domain,
+    "https://my-domain.at",
+  );
   await live.close();
   assert.deepEqual(errors, []);
   console.log(
