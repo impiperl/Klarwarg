@@ -20,6 +20,7 @@ import {
 import { Store, SitePathTakenError } from "./store.ts";
 import { loginCredentials } from "./admin.ts";
 import { githubRepos } from "./github.ts";
+import { exportWebsite, exportTarget } from "./export.ts";
 import {
   createSite,
   siteSchema,
@@ -333,6 +334,42 @@ export async function createApp(
           "Der Entwurf wurde in einem anderen Fenster geändert. Bitte sichere deine Änderungen als JSON und lade die aktuelle Version neu.",
       });
     res.json({ revision: saved });
+  });
+  app.post("/api/export", auth, withSite, (req, res) => {
+    const { site, targetUrl } = z
+      .object({
+        site: siteSchema,
+        targetUrl: z.string().max(2000).transform(exportTarget),
+      })
+      .parse(req.body);
+    if (!site.legal.imprint.trim() || !site.legal.privacy.trim())
+      return res
+        .status(409)
+        .json({
+          error:
+            "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).",
+        });
+    try {
+      const archive = exportWebsite(
+        site,
+        targetUrl,
+        dir,
+        store.translations(site.language),
+      );
+      res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="klarwarg-website.zip"',
+      );
+      res.setHeader("Cache-Control", "no-store");
+      res.type("application/zip").send(Buffer.from(archive));
+    } catch {
+      res
+        .status(400)
+        .json({
+          error:
+            "Der HTML-Export ist fehlgeschlagen. Bitte Zieladresse und verwendete Bilder prüfen.",
+        });
+    }
   });
   app.post("/api/publish", auth, withSite, (req, res) => {
     const id = res.locals.siteId as string;

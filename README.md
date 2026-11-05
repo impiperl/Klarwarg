@@ -471,3 +471,23 @@ Klarwarg is distributed WITHOUT ANY WARRANTY. Its templates for the legal notice
 texts for your own situation.
 
 The name "Klarwarg" and its logo are not covered by this license.
+
+## Static HTML export (FTP webspace)
+
+Under **Einstellungen → Website als HTML-ZIP exportieren**, enter the final website URL,
+including any subfolder, for example `https://example.at/iris/`. An empty field uses the
+website's custom domain. The export uses the current draft, including unsaved changes;
+it does not publish or change the local website. Fill in the legal notice and privacy
+policy first.
+
+Extract the downloaded ZIP and upload **its contents** into the corresponding webspace
+folder. It contains `index.html`, `impressum.html`, `datenschutz.html`, `site.css`, the
+referenced uploaded/template images in `assets/`, `robots.txt`, and `sitemap.xml`.
+Links and local assets are relative, so no URL rewriting or Node server is required.
+Canonical and social preview URLs use the destination address. On hosting with a shared
+root `robots.txt`, add the exported sitemap reference there when exporting to a subfolder.
+
+The exported site has no admin, API or database. Edit locally, then export and upload
+again. Imported services and repositories remain at their exported state; external
+images remain linked to their external URLs. Email, phone and external booking links
+continue working. The existing JSON backup remains a separate editable backup format.

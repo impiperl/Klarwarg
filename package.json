@@ -15,13 +15,15 @@
     "build:server": "esbuild server/index.ts server/create-admin.ts --bundle --platform=node --format=esm --target=node20 --jsx=automatic --outdir=server-build --out-extension:.js=.mjs --external:sql.js --log-level=warning \"--banner:js=import{createRequire as __cr}from'node:module';const require=__cr(import.meta.url);\"",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "test:browser": "tsx tests/browser.ts && tsx tests/browser-sites.ts",
-    "format": "prettier --write src server tests"
+    "test:browser": "tsx tests/browser.ts && tsx tests/browser-sites.ts && tsx tests/browser-export.ts",
+    "format": "prettier --write src server tests",
+    "test:browser:export": "tsx tests/browser-export.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "~56.0.0",
     "expo": "~56.0.0",
     "express": "^5.1.0",
+    "fflate": "^0.8.3",
     "lucide-react": "^0.468.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",

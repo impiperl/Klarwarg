@@ -1778,5 +1778,37 @@
   "Website „{name}“ löschen?": {
     "de": "Website „{name}“ löschen?",
     "en": "Delete the website “{name}”?"
+  },
+  "Zieladresse für HTML-Export": {
+    "de": "Zieladresse für HTML-Export",
+    "en": "Destination URL for HTML export"
+  },
+  "Die spätere Webadresse einschließlich Unterordner, z. B. https://example.at/iris/. Leer verwendet die eigene Domain.": {
+    "de": "Die spätere Webadresse einschließlich Unterordner, z. B. https://example.at/iris/. Leer verwendet die eigene Domain.",
+    "en": "The final website URL including its subfolder, e.g. https://example.at/iris/. Leave empty to use your custom domain."
+  },
+  "HTML-Export wird erstellt …": {
+    "de": "HTML-Export wird erstellt …",
+    "en": "Creating HTML export …"
+  },
+  "Website als HTML-ZIP exportieren": {
+    "de": "Website als HTML-ZIP exportieren",
+    "en": "Export website as HTML ZIP"
+  },
+  "Exportiert den aktuellen Entwurf mit Bildern, Impressum und Datenschutz. Nach Änderungen erneut exportieren und hochladen. Externe Bilder bleiben verlinkt.": {
+    "de": "Exportiert den aktuellen Entwurf mit Bildern, Impressum und Datenschutz. Nach Änderungen erneut exportieren und hochladen. Externe Bilder bleiben verlinkt.",
+    "en": "Exports the current draft with images, legal notice and privacy policy. Export and upload again after changes. External images remain linked."
+  },
+  "HTML-Website als ZIP exportiert. Entpacke die ZIP und lade ihren Inhalt in den Zielordner deines Webspace hoch.": {
+    "de": "HTML-Website als ZIP exportiert. Entpacke die ZIP und lade ihren Inhalt in den Zielordner deines Webspace hoch.",
+    "en": "HTML website exported as ZIP. Extract it and upload its contents to the destination folder on your webspace."
+  },
+  "Der HTML-Export ist fehlgeschlagen. Bitte Zieladresse und verwendete Bilder prüfen.": {
+    "de": "Der HTML-Export ist fehlgeschlagen. Bitte Zieladresse und verwendete Bilder prüfen.",
+    "en": "HTML export failed. Please check the destination URL and the images used."
+  },
+  "Bitte eine vollständige HTTP- oder HTTPS-Zieladresse ohne Zugangsdaten, Suchparameter oder Fragment angeben.": {
+    "de": "Bitte eine vollständige HTTP- oder HTTPS-Zieladresse ohne Zugangsdaten, Suchparameter oder Fragment angeben.",
+    "en": "Please enter a complete HTTP or HTTPS destination URL without credentials, query parameters or a fragment."
   }
 }

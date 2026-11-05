@@ -64,6 +64,7 @@ import SiteSurface, {
   type Selection,
 } from "./SiteSurface";
 import { api, API } from "./api";
+import { getUiLanguage } from "./locale";
 import {
   maxSitePathLength,
   sitePathBase,
@@ -776,6 +777,8 @@ function Builder({
     [inspectorOpen, setInspectorOpen] = useState(
       () => window.innerWidth > 1050,
     );
+  const [exportUrl, setExportUrl] = useState("");
+  const [exportBusy, setExportBusy] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<{
     kind: "canvas" | "static";
     id: string;
@@ -1200,6 +1203,42 @@ function Builder({
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     setNotice("Deine Website wurde als JSON gesichert.");
+  }
+  async function downloadHtml() {
+    if (!draft.current || exportBusy) return;
+    setExportBusy(true);
+    setError("");
+    try {
+      const response = await fetch(API + "/api/export" + siteQuery, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept-Language": getUiLanguage(),
+        },
+        body: JSON.stringify({
+          site: draft.current,
+          targetUrl: exportUrl || draft.current.domain,
+        }),
+      });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.errorKey || result.error);
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `klarwarg-${sitePath || suggestSitePath(draft.current.name) || "website"}.zip`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setNotice(
+        "HTML-Website als ZIP exportiert. Entpacke die ZIP und lade ihren Inhalt in den Zielordner deines Webspace hoch.",
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setExportBusy(false);
+    }
   }
   async function upload(file?: File) {
     if (!file) return;
@@ -2539,6 +2578,40 @@ function Builder({
               <small>{t("Entwurf und Veröffentlichung getrennt")}</small>
             </span>
           </div>
+          <Field
+            label={t("Zieladresse für HTML-Export")}
+            hint={t(
+              "Die spätere Webadresse einschließlich Unterordner, z. B. https://example.at/iris/. Leer verwendet die eigene Domain.",
+            )}
+          >
+            <input
+              type="url"
+              inputMode="url"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="https://example.at/iris/"
+              value={exportUrl}
+              onChange={(event) => setExportUrl(event.target.value)}
+            />
+          </Field>
+          <button
+            className="secondary full"
+            onClick={downloadHtml}
+            disabled={exportBusy}
+            aria-busy={exportBusy}
+          >
+            <Download size={16} />
+            {t(
+              exportBusy
+                ? "HTML-Export wird erstellt …"
+                : "Website als HTML-ZIP exportieren",
+            )}
+          </button>
+          <p className="hint">
+            {t(
+              "Exportiert den aktuellen Entwurf mit Bildern, Impressum und Datenschutz. Nach Änderungen erneut exportieren und hochladen. Externe Bilder bleiben verlinkt.",
+            )}
+          </p>
           <button className="secondary full" onClick={download}>
             <Download size={16} />
             {t("Website als JSON sichern")}
