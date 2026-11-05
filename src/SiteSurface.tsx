@@ -54,6 +54,8 @@ export const legalTitles = {
 const scaled = (value: number) => `calc(${value} * min(100cqw, 1200px) / 1200)`;
 type Props = {
   page?: PublicPage;
+  /** Pfadanfang der Website auf dem Server: "" für die Startseite, sonst z. B. "/iris". */
+  base?: string;
   messages?: Messages;
   site: Site;
   editing?: boolean;
@@ -382,7 +384,8 @@ export default function SiteSurface(props: Props) {
   // Öffentlich sind Impressum und Datenschutz eigene Seiten; im Editor klappen sie auf.
   const fluid = !editing && !mobile;
   const legalPage = page === "home" ? null : page;
-  const home = legalPage ? "/" : "";
+  const base = props.base || "";
+  const home = legalPage ? base || "/" : "";
   const contactHref = contactLink(site);
   const headerHref = resolveSiteLink(
     site.integrations.bookingUrl || "#kontakt",
@@ -516,7 +519,7 @@ export default function SiteSurface(props: Props) {
               {site.legal[legalPage] ||
                 t("Die Angaben werden vom Betreiber dieser Website ergänzt.")}
             </p>
-            <a className="legal-back" href="/">
+            <a className="legal-back" href={base || "/"}>
               {t("Zur Startseite")}
             </a>
           </section>
@@ -718,8 +721,8 @@ export default function SiteSurface(props: Props) {
         <div>
           {fluid ? (
             <>
-              <a href={legalPaths.imprint}>{t("Impressum")}</a>
-              <a href={legalPaths.privacy}>{t("Datenschutz")}</a>
+              <a href={base + legalPaths.imprint}>{t("Impressum")}</a>
+              <a href={base + legalPaths.privacy}>{t("Datenschutz")}</a>
             </>
           ) : (
             <>

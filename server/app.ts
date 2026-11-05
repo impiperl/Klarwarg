@@ -17,10 +17,15 @@ import {
   isLanguage,
   type Language,
 } from "../src/translations.ts";
-import { Store } from "./store.ts";
+import { Store, SitePathTakenError } from "./store.ts";
 import { loginCredentials } from "./admin.ts";
 import { githubRepos } from "./github.ts";
-import { createSite, siteSchema, serviceSchema } from "../src/model.ts";
+import {
+  createSite,
+  siteSchema,
+  serviceSchema,
+  type Site,
+} from "../src/model.ts";
 import {
   css,
   cssVersion,
@@ -30,6 +35,11 @@ import {
   sitemap,
 } from "./render.ts";
 import type { PublicPage } from "../src/SiteSurface.tsx";
+import {
+  sitePathBase,
+  sitePathProblem,
+  maxSitePathLength,
+} from "../src/sitePath.ts";
 
 const credentials = z.object({
   username: z.string().min(3).max(80),
@@ -222,7 +232,7 @@ export async function createApp(
         hash: digest(data.password, salt),
       }),
     );
-    store.save(createSite(), 0);
+    if (!store.siteId()) store.createSite(createSite());
     session(res);
     res.json({ ok: true });
   });
@@ -250,26 +260,73 @@ export async function createApp(
     res.clearCookie(cookieName, { path: "/" });
     res.json({ ok: true });
   });
-  app.get("/api/site", (_req, res) => {
-    const site = store.publicSite();
-    return site
-      ? res.json({ site, publishedAt: store.get("publishedAt") })
+  // Mehrere Websites: Die Editor-Routen nehmen die Website als ?site=<id>. Ohne Angabe ist die
+  // älteste gemeint, so wie es vor den mehreren Websites die einzige war.
+  const siteParam = (req: Request) =>
+    typeof req.query.site === "string" ? req.query.site : undefined;
+  const withSite = (req: Request, res: Response, next: NextFunction) => {
+    const id = store.siteId(siteParam(req));
+    if (!id)
+      return res
+        .status(404)
+        .json({ error: "Diese Website gibt es nicht mehr. Bitte neu laden." });
+    res.locals.siteId = id;
+    next();
+  };
+  app.get("/api/site", (req, res) => {
+    const found = store.siteAt(
+      typeof req.query.path === "string" ? req.query.path : "",
+    );
+    return found
+      ? res.json({ site: found.site, publishedAt: found.publishedAt })
       : res
           .status(404)
           .json({ error: "Diese Website wurde noch nicht veröffentlicht." });
   });
-  app.get("/api/draft", auth, (_req, res) =>
+  app.get("/api/sites", auth, (_req, res) =>
     res.json({
-      site: store.draft(),
-      revision: Number(store.get("revision") || 0),
-      publishedAt: store.get("publishedAt") || null,
+      sites: store.sites().map(({ id, name, path, publishedAt }) => ({
+        id,
+        name,
+        path,
+        publishedAt,
+      })),
     }),
   );
-  app.put("/api/draft", auth, (req, res) => {
+  app.post("/api/sites", auth, (req, res) => {
+    const { profession } = z
+      .object({ profession: z.string().max(40).optional() })
+      .parse(req.body ?? {});
+    res.json({ id: store.createSite(createSite(profession)) });
+  });
+  app.delete("/api/sites/:id", auth, (req, res) => {
+    const id = store.siteId(String(req.params.id));
+    if (!id)
+      return res
+        .status(404)
+        .json({ error: "Diese Website gibt es nicht mehr. Bitte neu laden." });
+    if (store.sites().length < 2)
+      return res.status(409).json({
+        error: "Die letzte Website kann nicht gelöscht werden.",
+      });
+    store.deleteSite(id);
+    res.json({ ok: true });
+  });
+  app.get("/api/draft", auth, withSite, (_req, res) => {
+    const id = res.locals.siteId as string;
+    res.json({
+      id,
+      site: store.draft(id),
+      revision: store.revision(id),
+      publishedAt: store.publishedAt(id) || null,
+      path: store.path(id) ?? null,
+    });
+  });
+  app.put("/api/draft", auth, withSite, (req, res) => {
     const { site, revision } = z
       .object({ site: siteSchema, revision: z.number().int().nonnegative() })
       .parse(req.body);
-    const saved = store.save(site, revision);
+    const saved = store.save(site, revision, res.locals.siteId);
     if (saved === null)
       return res.status(409).json({
         error:
@@ -277,36 +334,41 @@ export async function createApp(
       });
     res.json({ revision: saved });
   });
-  app.post("/api/publish", auth, (_req, res) => {
+  app.post("/api/publish", auth, withSite, (req, res) => {
+    const id = res.locals.siteId as string;
+    const { path: requested } = z
+      .object({
+        path: z.string().trim().toLowerCase().max(maxSitePathLength).optional(),
+      })
+      .parse(req.body ?? {});
     // Ohne Impressum und Datenschutzerklärung geht keine Website online (Impressumspflicht).
-    const draft = store.draft();
+    const draft = store.draft(id);
     if (draft && (!draft.legal.imprint.trim() || !draft.legal.privacy.trim()))
       return res.status(409).json({
         error:
           "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).",
       });
-    res.json({ ...store.publish(), url: "/" });
+    const problem = requested === undefined ? null : sitePathProblem(requested);
+    if (problem) return res.status(400).json({ error: problem, field: "path" });
+    try {
+      const result = store.publish(id, requested);
+      res.json({ ...result, url: sitePathBase(result.path) || "/" });
+    } catch (error) {
+      if (error instanceof SitePathTakenError)
+        return res.status(409).json({ error: error.message, field: "path" });
+      throw error;
+    }
   });
-  app.get("/api/versions", auth, (_req, res) => {
-    const result = store.db.exec(
-      "SELECT id,created FROM versions ORDER BY created DESC",
-    );
-    res.json({
-      versions:
-        result[0]?.values.map(([id, created]) => ({ id, created })) || [],
-    });
+  app.get("/api/versions", auth, withSite, (_req, res) => {
+    res.json({ versions: store.versions(res.locals.siteId) });
   });
-  app.post("/api/restore/:id", auth, (req, res) => {
-    const result = store.db.exec("SELECT document FROM versions WHERE id=?", [
-      String(req.params.id),
-    ]);
-    if (!result[0])
+  app.post("/api/restore/:id", auth, withSite, (req, res) => {
+    const id = res.locals.siteId as string;
+    const version = store.version(String(req.params.id), id);
+    if (!version)
       return res.status(404).json({ error: "Version nicht gefunden." });
-    const revision = store.save(
-      siteSchema.parse(JSON.parse(String(result[0].values[0][0]))),
-      Number(store.get("revision") || 0),
-    );
-    res.json({ revision, site: store.draft() });
+    const revision = store.save(version, store.revision(id), id);
+    res.json({ revision, site: store.draft(id) });
   });
   app.post("/api/password", auth, (req, res) => {
     const data = z
@@ -534,36 +596,60 @@ export async function createApp(
         : null,
     }),
   );
-  // Öffentliche Website: fertiges HTML vom Server, ohne JavaScript im Browser.
-  const origin = (req: Request) =>
+  // Öffentliche Websites: fertiges HTML vom Server, ohne JavaScript im Browser.
+  const hostOrigin = (req: Request) =>
     (
-      store.publicSite()?.domain ||
-      process.env.PUBLIC_ORIGIN ||
-      `${req.protocol}://${req.get("host")}`
+      process.env.PUBLIC_ORIGIN || `${req.protocol}://${req.get("host")}`
     ).replace(/\/+$/, "");
-  const publicPage = (page: PublicPage) => (req: Request, res: Response) => {
+  const siteOrigin = (req: Request, site?: Site) =>
+    (site?.domain || hostOrigin(req)).replace(/\/+$/, "");
+  const legalSuffix = {
+    home: "",
+    imprint: "/impressum",
+    privacy: "/datenschutz",
+  };
+  const notFound = (req: Request, res: Response) =>
+    res
+      .status(404)
+      .type("html")
+      .send(
+        renderUnpublished(
+          requestLanguage(req),
+          store.translations(requestLanguage(req)),
+        ),
+      );
+  /** Website unter `path` ("" = Startseite); eine frühere Adresse leitet auf die heutige weiter. */
+  const serveSite = (
+    path: string,
+    page: PublicPage,
+    req: Request,
+    res: Response,
+  ) => {
     res.setHeader(
       "Content-Security-Policy",
       "default-src 'none'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     );
     res.setHeader("Cache-Control", "no-cache");
-    const site = store.publicSite();
-    if (!site)
+    const found = store.siteAt(path);
+    if (found)
       return res
-        .status(404)
         .type("html")
         .send(
-          renderUnpublished(
-            requestLanguage(req),
-            store.translations(requestLanguage(req)),
+          renderPage(
+            found.site,
+            page,
+            siteOrigin(req, found.site),
+            store.translations(found.site.language),
+            sitePathBase(path),
           ),
         );
-    res
-      .type("html")
-      .send(
-        renderPage(site, page, origin(req), store.translations(site.language)),
-      );
+    const moved = store.redirect(path);
+    if (moved !== undefined)
+      return res.redirect(301, sitePathBase(moved) + legalSuffix[page] || "/");
+    notFound(req, res);
   };
+  const publicPage = (page: PublicPage) => (req: Request, res: Response) =>
+    serveSite("", page, req, res);
   app.get("/", publicPage("home"));
   app.get("/impressum", publicPage("imprint"));
   app.get("/datenschutz", publicPage("privacy"));
@@ -577,11 +663,22 @@ export async function createApp(
     res.type("css").send(css);
   });
   app.get("/robots.txt", (req, res) =>
-    res.type("text").send(robots(origin(req))),
+    res.type("text").send(robots(siteOrigin(req, store.siteAt("")?.site))),
   );
   app.get("/sitemap.xml", (req, res) => {
-    if (!store.publicSite()) return res.status(404).type("text").send("");
-    res.type("xml").send(sitemap(origin(req), store.get("publishedAt")));
+    const entries = store.sites().flatMap((record) => {
+      const found =
+        record.path === null ? undefined : store.siteAt(record.path);
+      if (!found || record.path === null) return [];
+      return [
+        {
+          loc: siteOrigin(req, found.site) + (sitePathBase(record.path) || "/"),
+          lastmod: found.publishedAt,
+        },
+      ];
+    });
+    if (!entries.length) return res.status(404).type("text").send("");
+    res.type("xml").send(sitemap(entries));
   });
   // Mitgelieferte Bilder auch ohne Expo-Export (Entwicklung, Tests).
   app.use(
@@ -603,6 +700,16 @@ export async function createApp(
         );
     app.get("/admin", (_req, res) => res.type("html").send(adminHtml()));
   }
+  // Weitere Websites unter /iris, /judith … – nach allen festen Pfaden, damit keiner überdeckt wird.
+  const pathPage =
+    (page: PublicPage) => (req: Request, res: Response, next: NextFunction) => {
+      const path = String(req.params.path);
+      if (sitePathProblem(path)) return next();
+      serveSite(path, page, req, res);
+    };
+  app.get("/:path", pathPage("home"));
+  app.get("/:path/impressum", pathPage("imprint"));
+  app.get("/:path/datenschutz", pathPage("privacy"));
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
       if (error instanceof ZodError)

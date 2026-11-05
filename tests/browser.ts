@@ -52,6 +52,8 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROME_BIN || "/bin/google-chrome",
   args: ["--no-sandbox"],
 });
+// Der Editor nennt die Website: /api/draft?site=<id>.
+const draftUrl = /\/api\/draft(\?.*)?$/;
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(e.message));
@@ -565,7 +567,7 @@ try {
   );
   const savedTemplate = page.waitForResponse(
     (response) =>
-      response.url().endsWith("/api/draft") &&
+      draftUrl.test(response.url()) &&
       response.request().method() === "PUT" &&
       response.status() === 200,
   );
@@ -781,7 +783,7 @@ try {
       .profession,
     "developer",
   );
-  await page.route("**/api/draft", async (route) => {
+  await page.route(draftUrl, async (route) => {
     if (route.request().method() === "PUT")
       await route.fulfill({
         status: 503,
@@ -808,7 +810,7 @@ try {
     .filter({ hasText: "Softwareentwicklung" })
     .waitFor();
   await page.getByRole("button", { name: "Abbrechen", exact: true }).click();
-  await page.unroute("**/api/draft");
+  await page.unroute(draftUrl);
   await page.getByRole("button", { name: "Inhalte", exact: true }).click();
   await page
     .getByRole("button", {

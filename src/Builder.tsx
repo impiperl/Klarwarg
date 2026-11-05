@@ -65,6 +65,12 @@ import SiteSurface, {
 } from "./SiteSurface";
 import { api, API } from "./api";
 import {
+  maxSitePathLength,
+  sitePathBase,
+  sitePathProblem,
+  suggestSitePath,
+} from "./sitePath";
+import {
   careers,
   changeVoice,
   colorNames,
@@ -404,14 +410,19 @@ function PublicSite() {
     typeof window !== "undefined"
       ? window.location.pathname.replace(/\/$/, "")
       : "";
-  const page: PublicPage =
-    path === legalPaths.imprint
+  // "/iris/impressum" → Website "iris", Impressum; "/impressum" → Startseiten-Website.
+  const segments = path.split("/").filter(Boolean);
+  const legalPage = (segment?: string): PublicPage | null =>
+    segment && "/" + segment === legalPaths.imprint
       ? "imprint"
-      : path === legalPaths.privacy
+      : segment && "/" + segment === legalPaths.privacy
         ? "privacy"
-        : "home";
+        : null;
+  const sitePath = segments[0] && !legalPage(segments[0]) ? segments[0] : "";
+  const page: PublicPage =
+    legalPage(sitePath ? segments[1] : segments[0]) || "home";
   useEffect(() => {
-    api("/site")
+    api("/site?path=" + encodeURIComponent(sitePath))
       .then((v) => setSite(v.site))
       .catch((e) => setError(e.message));
   }, []);
@@ -434,7 +445,7 @@ function PublicSite() {
   if (site)
     return (
       <div className="public-site">
-        <SiteSurface site={site} page={page} />
+        <SiteSurface site={site} page={page} base={sitePathBase(sitePath)} />
       </div>
     );
   return (
@@ -535,7 +546,87 @@ function Screen() {
       />
     );
   return (
-    <Builder onLogout={() => setAuth({ setup: false, authenticated: false })} />
+    <Workspace
+      onLogout={() => setAuth({ setup: false, authenticated: false })}
+    />
+  );
+}
+
+type SiteEntry = {
+  id: string;
+  name: string;
+  /** Veröffentlichte Adresse ("" = Startseite), `null` solange nicht veröffentlicht. */
+  path: string | null;
+  publishedAt: string | null;
+};
+const siteStorageKey = "klarwarg.site";
+function rememberSite(id?: string) {
+  try {
+    if (id) window.localStorage.setItem(siteStorageKey, id);
+    return window.localStorage.getItem(siteStorageKey);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mehrere Websites: Hier wird gewählt, welche im Editor offen ist. Beim Wechsel wird der Editor
+ * neu aufgebaut (`key`), damit Entwurf, Revision, Verlauf und Auswahl nie in die andere Website
+ * hinüberwandern. Gespeichert wird vorher im Editor selbst.
+ */
+function Workspace({ onLogout }: { onLogout: () => void }) {
+  const { t } = useI18n();
+  const [sites, setSites] = useState<SiteEntry[] | null>(null),
+    [current, setCurrent] = useState<{ id: string; fresh: boolean } | null>(
+      null,
+    ),
+    [error, setError] = useState("");
+  const reload = useCallback(async () => {
+    const data = await api<{ sites: SiteEntry[] }>("/sites");
+    setSites(data.sites);
+    return data.sites;
+  }, []);
+  const open = useCallback((id: string, fresh = false) => {
+    rememberSite(id);
+    setCurrent({ id, fresh });
+  }, []);
+  useEffect(() => {
+    reload()
+      .then(async (list) => {
+        const remembered = rememberSite();
+        const id =
+          list.find((site) => site.id === remembered)?.id || list[0]?.id;
+        if (id) return open(id);
+        const created = await api<{ id: string }>("/sites", {});
+        await reload();
+        open(created.id, true);
+      })
+      .catch((e) => setError(e.message));
+  }, [reload, open]);
+  if (error || !sites || !current)
+    return (
+      <div className="loading-page">
+        <LanguageSwitch />
+        {error ? (
+          <p role="alert">{t(error)}</p>
+        ) : (
+          <>
+            <LoaderCircle className="spin" />
+            {t("Klarwarg wird geladen …")}
+          </>
+        )}
+      </div>
+    );
+  return (
+    <Builder
+      key={current.id}
+      siteId={current.id}
+      startWithTemplates={current.fresh}
+      sites={sites}
+      onSitesChanged={reload}
+      onOpenSite={open}
+      onLogout={onLogout}
+    />
   );
 }
 function InitialPasswordChange({
@@ -642,8 +733,25 @@ function InitialPasswordChange({
   );
 }
 
-function Builder({ onLogout }: { onLogout: () => void }) {
+function Builder({
+  onLogout,
+  siteId,
+  sites,
+  startWithTemplates = false,
+  onSitesChanged,
+  onOpenSite,
+}: {
+  onLogout: () => void;
+  siteId: string;
+  sites: SiteEntry[];
+  /** Neu angelegte Website: gleich mit der Berufswahl beginnen. */
+  startWithTemplates?: boolean;
+  onSitesChanged: () => Promise<SiteEntry[]>;
+  onOpenSite: (id: string, fresh?: boolean) => void;
+}) {
   const { t, language } = useI18n();
+  // Jede Anfrage an Entwurf, Veröffentlichung und Versionen nennt die Website ausdrücklich.
+  const siteQuery = "?site=" + encodeURIComponent(siteId);
   const [site, setSite] = useState<Site | null>(null),
     [tab, setTab] = useState<Tab>("content"),
     [selected, setSelected] = useState<Selection>(null),
@@ -652,7 +760,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     [notice, setNotice] = useState("");
   const [mobile, setMobile] = useState(() => window.innerWidth <= 760),
     [preview, setPreview] = useState(false),
-    [templates, setTemplates] = useState(false),
+    [templates, setTemplates] = useState(startWithTemplates),
     [templateChoice, setTemplateChoice] = useState<string | null>(null),
     [templateBusy, setTemplateBusy] = useState(false),
     [templateError, setTemplateError] = useState(""),
@@ -660,6 +768,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     [publishedAt, setPublishedAt] = useState<string | null>(null),
     [publishing, setPublishing] = useState(false),
     [publishOpen, setPublishOpen] = useState(false),
+    [sitePath, setSitePath] = useState<string | null>(null),
+    [publishPath, setPublishPath] = useState(""),
+    [siteBusy, setSiteBusy] = useState(false),
+    [deleteOpen, setDeleteOpen] = useState(false),
     [showPanel, setShowPanel] = useState(() => window.innerWidth > 760),
     [inspectorOpen, setInspectorOpen] = useState(
       () => window.innerWidth > 1050,
@@ -715,6 +827,8 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     saved = useRef(""),
     queue = useRef(Promise.resolve()),
     conflict = useRef(false),
+    // Nach dem Löschen darf kein verspätetes automatisches Speichern mehr losgehen.
+    deleted = useRef(false),
     integrationGeneration = useRef(0),
     undo = useRef<Site[]>([]),
     redo = useRef<Site[]>([]),
@@ -723,9 +837,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     importInput = useRef<HTMLInputElement>(null),
     uploadInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    api("/draft")
+    api("/draft" + siteQuery)
       .then((data) => {
         draft.current = data.site;
+        setSitePath(data.path ?? null);
         setSite(data.site);
         revision.current = data.revision;
         saved.current = JSON.stringify(data.site);
@@ -854,7 +969,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
   }
   const save = useCallback(async () => {
     const snapshot = draft.current;
-    if (!snapshot) return;
+    if (!snapshot || deleted.current) return;
     const json = JSON.stringify(snapshot);
     const job = queue.current
       .catch(() => {})
@@ -868,7 +983,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         try {
           const validated = siteSchema.parse(snapshot);
           const result = await api(
-            "/draft",
+            "/draft" + siteQuery,
             { site: validated, revision: revision.current },
             "PUT",
           );
@@ -998,6 +1113,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
         !templates &&
         !help &&
         !publishOpen &&
+        !deleteOpen &&
         !removeTarget
       ) {
         setPreview(false);
@@ -1079,7 +1195,8 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     a.href = URL.createObjectURL(
       new Blob([JSON.stringify(site, null, 2)], { type: "application/json" }),
     );
-    a.download = "klarwarg-website.json";
+    // Je Website ein eigener Dateiname, damit sich Sicherungen mehrerer Websites nicht verwechseln.
+    a.download = `klarwarg-${sitePath || suggestSitePath(site.name) || "website"}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     setNotice("Deine Website wurde als JSON gesichert.");
@@ -1130,8 +1247,12 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     setError("");
     try {
       await save();
-      const result = await api("/publish", {});
+      const result = await api("/publish" + siteQuery, {
+        path: publishPath.trim().toLowerCase(),
+      });
       setPublishedAt(result.created);
+      setSitePath(result.path);
+      onSitesChanged().catch(() => {});
       setPublishOpen(false);
       setNotice("Deine Website ist veröffentlicht.");
     } catch (e) {
@@ -1140,6 +1261,78 @@ function Builder({ onLogout }: { onLogout: () => void }) {
       setPublishing(false);
     }
   }
+  /** Andere Website öffnen; vorher wird der Entwurf dieser Website gespeichert. */
+  async function switchSite(id: string) {
+    if (id === siteId || siteBusy) return;
+    setSiteBusy(true);
+    try {
+      await save();
+      onOpenSite(id);
+    } catch (e) {
+      setError((e as Error).message);
+      setSiteBusy(false);
+    }
+  }
+  async function createNewSite() {
+    if (siteBusy) return;
+    setSiteBusy(true);
+    try {
+      await save();
+      const { id } = await api<{ id: string }>("/sites", {});
+      await onSitesChanged();
+      onOpenSite(id, true);
+    } catch (e) {
+      setError((e as Error).message);
+      setSiteBusy(false);
+    }
+  }
+  async function deleteThisSite() {
+    if (siteBusy) return;
+    setSiteBusy(true);
+    deleted.current = true;
+    try {
+      await api("/sites/" + encodeURIComponent(siteId), undefined, "DELETE");
+      const list = await onSitesChanged();
+      onOpenSite(list[0].id);
+    } catch (e) {
+      deleted.current = false;
+      setError((e as Error).message);
+      setSiteBusy(false);
+    }
+  }
+  const siteLabel = (entry: SiteEntry) => {
+    const name =
+      (entry.id === siteId ? site?.name : entry.name) || t("Ohne Namen");
+    const path = entry.id === siteId ? sitePath : entry.path;
+    return path === null ? name : `${name} · /${path}`;
+  };
+  const siteOptions = sites.map((entry) => (
+    <option key={entry.id} value={entry.id}>
+      {siteLabel(entry)}
+    </option>
+  ));
+  function openPublish() {
+    const rootTaken = sites.some(
+      (entry) => entry.id !== siteId && entry.path === "",
+    );
+    setPublishPath(
+      sitePath ?? (rootTaken ? suggestSitePath(site?.name || "") : ""),
+    );
+    setError("");
+    setPublishOpen(true);
+  }
+  const normalizedPublishPath = publishPath.trim().toLowerCase();
+  const publishPathTakenBy = sites.find(
+    (entry) => entry.id !== siteId && entry.path === normalizedPublishPath,
+  );
+  const publishPathProblem = sitePathProblem(normalizedPublishPath);
+  const publishPathError = publishPathProblem
+    ? t(publishPathProblem)
+    : publishPathTakenBy
+      ? t("Diese Adresse hat schon die Website „{name}“.", {
+          name: publishPathTakenBy.name || t("Ohne Namen"),
+        })
+      : "";
   const validationResult = React.useMemo(
     () => (site ? siteSchema.safeParse(site) : null),
     [site],
@@ -2269,6 +2462,45 @@ function Builder({ onLogout }: { onLogout: () => void }) {
     ) : (
       <>
         <div className="panel-section">
+          <h3>{t("Deine Websites")}</h3>
+          <p className="muted small">
+            {t(
+              "Jede Website hat ihren eigenen Entwurf, ihre eigenen Versionen und ihre eigene Adresse. Die Adresse legst du beim Veröffentlichen fest.",
+            )}
+          </p>
+          <Field label={t("Website bearbeiten")}>
+            <select
+              value={siteId}
+              disabled={siteBusy}
+              data-editor-field="site-switch"
+              onChange={(event) => switchSite(event.currentTarget.value)}
+            >
+              {siteOptions}
+            </select>
+          </Field>
+          <button
+            className="secondary full"
+            disabled={siteBusy}
+            onClick={createNewSite}
+          >
+            <Plus size={16} />
+            {t("Neue Website anlegen")}
+          </button>
+          <button
+            className="text-button"
+            disabled={siteBusy || sites.length < 2}
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 size={15} />
+            {t("Diese Website löschen")}
+          </button>
+          {sites.length < 2 && (
+            <p className="muted small">
+              {t("Die letzte Website kann nicht gelöscht werden.")}
+            </p>
+          )}
+        </div>
+        <div className="panel-section">
           <span className="eyebrow">{t("ALLES GUT AUFGEHOBEN.")}</span>
           <h3>{t("Deine Website verwalten.")}</h3>
           <Field
@@ -2332,7 +2564,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 const next = siteSchema.parse(JSON.parse(await file.text()));
                 if (
                   window.confirm(
-                    t("Den aktuellen Entwurf durch diese Sicherung ersetzen?"),
+                    t(
+                      "Den Entwurf der Website „{name}“ durch diese Sicherung ersetzen? Die Adresse der Website bleibt, wie sie ist.",
+                      { name: site.name || t("Ohne Namen") },
+                    ),
                   )
                 ) {
                   change(next);
@@ -2411,7 +2646,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           <button
             className="text-button"
             onClick={() =>
-              api("/versions")
+              api("/versions" + siteQuery)
                 .then((data) => setVersions(data.versions))
                 .catch((e) => setError(e.message))
             }
@@ -2440,7 +2675,10 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                     return;
                   try {
                     await save();
-                    const data = await api("/restore/" + v.id, {});
+                    const data = await api(
+                      "/restore/" + encodeURIComponent(v.id) + siteQuery,
+                      {},
+                    );
                     revision.current = data.revision;
                     saved.current = JSON.stringify(data.site);
                     change(data.site);
@@ -2554,7 +2792,15 @@ function Builder({ onLogout }: { onLogout: () => void }) {
           </a>
           <span className="header-divider" />
           <span className="project-name">
-            {t("Meine Website")}{" "}
+            <select
+              className="site-switcher"
+              aria-label={t("Website wählen")}
+              value={siteId}
+              disabled={siteBusy}
+              onChange={(event) => switchSite(event.currentTarget.value)}
+            >
+              {siteOptions}
+            </select>
             <span className="project-badge">{t(currentCareer.name)}</span>
           </span>
           <div className="header-actions">
@@ -2589,7 +2835,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                 publishing ? t("Veröffentlicht …") : t("Veröffentlichen")
               }
               title={t("Veröffentlichen")}
-              onClick={() => setPublishOpen(true)}
+              onClick={openPublish}
               disabled={publishing}
             >
               <Globe size={16} />
@@ -3469,6 +3715,41 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             </div>
           </Modal>
         )}
+        {deleteOpen && (
+          <Modal
+            title={t("Website „{name}“ löschen?", {
+              name: site.name || t("Ohne Namen"),
+            })}
+            onClose={() => !siteBusy && setDeleteOpen(false)}
+          >
+            <p className="modal-subtitle">
+              {t(
+                "Entwurf, veröffentlichte Website und alle gesicherten Versionen dieser Website werden gelöscht, ihre Adresse wird frei. Hochgeladene Bilder bleiben auf dem Server. Sichere die Website vorher als JSON, wenn du sie behalten willst.",
+              )}
+            </p>
+            {error && (
+              <p role="alert" className="error-message">
+                {t(error)}
+              </p>
+            )}
+            <div className="modal-actions">
+              <button
+                className="secondary"
+                disabled={siteBusy}
+                onClick={() => setDeleteOpen(false)}
+              >
+                {t("Abbrechen")}
+              </button>
+              <button
+                className="primary"
+                disabled={siteBusy}
+                onClick={deleteThisSite}
+              >
+                {t("Website löschen")}
+              </button>
+            </div>
+          </Modal>
+        )}
         {publishOpen && (
           <Modal
             title={
@@ -3517,6 +3798,38 @@ function Builder({ onLogout }: { onLogout: () => void }) {
                     )}
               </li>
             </ul>
+            <FieldErrors.Provider
+              value={publishPathError ? { sitePath: publishPathError } : {}}
+            >
+              <Field
+                path="sitePath"
+                label={t("Adresse der Website")}
+                hint={t(
+                  "Leer lassen für die Startseite. Änderst du die Adresse später, leitet die alte automatisch auf die neue weiter.",
+                )}
+              >
+                <div className="site-path-input">
+                  <span aria-hidden="true">
+                    {(site.domain || window.location.origin).replace(
+                      /^https?:\/\//,
+                      "",
+                    )}
+                    /
+                  </span>
+                  <input
+                    type="text"
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={maxSitePathLength}
+                    placeholder={t("Startseite")}
+                    value={publishPath}
+                    data-editor-field="site-path"
+                    onChange={(event) => setPublishPath(event.target.value)}
+                  />
+                </div>
+              </Field>
+            </FieldErrors.Provider>
             {error && (
               <p role="alert" className="error-message">
                 {t(error)}
@@ -3526,6 +3839,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
               className="primary full"
               disabled={
                 publishing ||
+                !!publishPathError ||
                 !site.legal.imprint.trim() ||
                 !site.legal.privacy.trim()
               }
@@ -3542,7 +3856,7 @@ function Builder({ onLogout }: { onLogout: () => void }) {
             {publishedAt && (
               <a
                 className="text-button centered"
-                href="/"
+                href={sitePathBase(sitePath) || "/"}
                 target="_blank"
                 rel="noopener noreferrer"
               >

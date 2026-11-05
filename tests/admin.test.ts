@@ -136,7 +136,7 @@ test("Adminvorbelegung erzeugt einen unveröffentlichten Entwurf und zufällige 
     for (const store of stores) {
       createAdmin(store, { username: "admin", password: "test123" });
       assert.ok(store.draft());
-      assert.equal(store.get("revision"), "1");
+      assert.equal(store.revision(), 1);
       assert.equal(store.publicSite(), undefined);
     }
     const [a, b] = stores.map((store) => JSON.parse(store.get("admin")!));

@@ -583,10 +583,6 @@
     "de": "Die Sicherung ist zu groß.",
     "en": "The backup is too large."
   },
-  "Den aktuellen Entwurf durch diese Sicherung ersetzen?": {
-    "de": "Den aktuellen Entwurf durch diese Sicherung ersetzen?",
-    "en": "Replace the current draft with this backup?"
-  },
   "Sicherung als Entwurf geladen.": {
     "de": "Sicherung als Entwurf geladen.",
     "en": "Backup loaded as a draft."
@@ -1702,5 +1698,85 @@
   "Klarwarg ist freie Software unter der GNU Affero General Public License 3.0.": {
     "de": "Klarwarg ist freie Software unter der GNU Affero General Public License 3.0.",
     "en": "Klarwarg is free software under the GNU Affero General Public License 3.0."
+  },
+  "Adresse der Website": {
+    "de": "Adresse der Website",
+    "en": "Website address"
+  },
+  "Bitte nur Kleinbuchstaben, Ziffern und einzelne Bindestriche verwenden (höchstens 60 Zeichen).": {
+    "de": "Bitte nur Kleinbuchstaben, Ziffern und einzelne Bindestriche verwenden (höchstens 60 Zeichen).",
+    "en": "Please use only lowercase letters, digits and single hyphens (at most 60 characters)."
+  },
+  "Deine Websites": {
+    "de": "Deine Websites",
+    "en": "Your websites"
+  },
+  "Den Entwurf der Website „{name}“ durch diese Sicherung ersetzen? Die Adresse der Website bleibt, wie sie ist.": {
+    "de": "Den Entwurf der Website „{name}“ durch diese Sicherung ersetzen? Die Adresse der Website bleibt, wie sie ist.",
+    "en": "Replace the draft of the website “{name}” with this backup? The website’s address stays as it is."
+  },
+  "Die letzte Website kann nicht gelöscht werden.": {
+    "de": "Die letzte Website kann nicht gelöscht werden.",
+    "en": "The last website cannot be deleted."
+  },
+  "Diese Adresse braucht Klarwarg selbst. Bitte eine andere wählen.": {
+    "de": "Diese Adresse braucht Klarwarg selbst. Bitte eine andere wählen.",
+    "en": "Klarwarg needs this address itself. Please choose another one."
+  },
+  "Diese Adresse hat schon die Website „{name}“.": {
+    "de": "Diese Adresse hat schon die Website „{name}“.",
+    "en": "The website “{name}” already uses this address."
+  },
+  "Diese Adresse hat schon eine andere Website.": {
+    "de": "Diese Adresse hat schon eine andere Website.",
+    "en": "Another website already uses this address."
+  },
+  "Diese Website gibt es nicht mehr. Bitte neu laden.": {
+    "de": "Diese Website gibt es nicht mehr. Bitte neu laden.",
+    "en": "This website no longer exists. Please reload."
+  },
+  "Diese Website löschen": {
+    "de": "Diese Website löschen",
+    "en": "Delete this website"
+  },
+  "Entwurf, veröffentlichte Website und alle gesicherten Versionen dieser Website werden gelöscht, ihre Adresse wird frei. Hochgeladene Bilder bleiben auf dem Server. Sichere die Website vorher als JSON, wenn du sie behalten willst.": {
+    "de": "Entwurf, veröffentlichte Website und alle gesicherten Versionen dieser Website werden gelöscht, ihre Adresse wird frei. Hochgeladene Bilder bleiben auf dem Server. Sichere die Website vorher als JSON, wenn du sie behalten willst.",
+    "en": "The draft, the published website and all saved versions of this website will be deleted, and its address becomes free. Uploaded images stay on the server. Back up the website as JSON first if you want to keep it."
+  },
+  "Jede Website hat ihren eigenen Entwurf, ihre eigenen Versionen und ihre eigene Adresse. Die Adresse legst du beim Veröffentlichen fest.": {
+    "de": "Jede Website hat ihren eigenen Entwurf, ihre eigenen Versionen und ihre eigene Adresse. Die Adresse legst du beim Veröffentlichen fest.",
+    "en": "Each website has its own draft, its own versions and its own address. You choose the address when publishing."
+  },
+  "Leer lassen für die Startseite. Änderst du die Adresse später, leitet die alte automatisch auf die neue weiter.": {
+    "de": "Leer lassen für die Startseite. Änderst du die Adresse später, leitet die alte automatisch auf die neue weiter.",
+    "en": "Leave empty for the home page. If you change the address later, the old one automatically redirects to the new one."
+  },
+  "Neue Website anlegen": {
+    "de": "Neue Website anlegen",
+    "en": "Create new website"
+  },
+  "Ohne Namen": {
+    "de": "Ohne Namen",
+    "en": "Untitled"
+  },
+  "Startseite": {
+    "de": "Startseite",
+    "en": "Home page"
+  },
+  "Website bearbeiten": {
+    "de": "Website bearbeiten",
+    "en": "Edit website"
+  },
+  "Website löschen": {
+    "de": "Website löschen",
+    "en": "Delete website"
+  },
+  "Website wählen": {
+    "de": "Website wählen",
+    "en": "Choose website"
+  },
+  "Website „{name}“ löschen?": {
+    "de": "Website „{name}“ löschen?",
+    "en": "Delete the website “{name}”?"
   }
 }

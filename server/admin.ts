@@ -26,8 +26,7 @@ export function createAdmin(store: Store, input: unknown) {
       hash: scryptSync(password, salt, 64).toString("hex"),
     }),
   );
-  if (!store.draft())
-    store.save(createSite(), Number(store.get("revision") || 0));
+  if (!store.siteId()) store.createSite(createSite());
   else store.flush();
   return username;
 }

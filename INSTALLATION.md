@@ -131,7 +131,9 @@ Läuft nginx im Container, lös `klarwarg` besser erst bei der Anfrage auf: per 
 Klarwarg aus ist.
 
 Klarwarg braucht eine eigene Domain oder Subdomain. Unter einem Unterpfad wie `/klarwarg/` läuft
-es nicht.
+es nicht. Mehrere Websites unter einer Domain gehen trotzdem: Die Adresse jeder Website
+(`/iris`, `/judith` oder leer für `/`) legst du beim Veröffentlichen fest. Der nginx-Block oben
+leitet dafür einfach alles (`location /`) an Klarwarg weiter.
 
 ### Auswahl 3: Im eigenen Netzwerk ausprobieren
 

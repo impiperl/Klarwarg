@@ -83,14 +83,14 @@ function previewImage(site: Site, origin: string) {
   return src.startsWith("/") ? origin + src : src;
 }
 
-function structuredData(site: Site, origin: string) {
+function structuredData(site: Site, origin: string, home: string) {
   const image = previewImage(site, origin);
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": schemaTypes[site.profession] || "ProfessionalService",
     name: site.name,
     description: describe(site),
-    url: origin + "/",
+    url: home,
   };
   if (!site.hiddenSections.includes("contact") && site.contact.email)
     data.email = site.contact.email;
@@ -123,9 +123,12 @@ export function renderPage(
   page: PublicPage,
   origin: string,
   messages: Messages = {},
+  /** Pfadanfang der Website: "" für die Startseite, sonst z. B. "/iris". */
+  base = "",
 ) {
   const t = createTranslator(site.language, messages);
-  const path = page === "home" ? "/" : legalPaths[page];
+  const home = origin + (base || "/");
+  const url = page === "home" ? home : origin + base + legalPaths[page];
   const title =
     page === "home"
       ? site.tagline
@@ -139,18 +142,18 @@ export function renderPage(
     `<meta name="description" content="${escape(description)}">`,
     // Rechtstexte gehören nicht in die Suchtreffer, ihre Links dürfen aber verfolgt werden.
     page === "home" ? "" : `<meta name="robots" content="noindex, follow">`,
-    `<link rel="canonical" href="${escape(origin + path)}">`,
+    `<link rel="canonical" href="${escape(url)}">`,
     `<meta property="og:type" content="website">`,
     `<meta property="og:locale" content="${site.language === "en" ? "en_GB" : "de_DE"}">`,
     `<meta property="og:site_name" content="${escape(site.name)}">`,
     `<meta property="og:title" content="${escape(title)}">`,
     `<meta property="og:description" content="${escape(description)}">`,
-    `<meta property="og:url" content="${escape(origin + path)}">`,
+    `<meta property="og:url" content="${escape(url)}">`,
     image ? `<meta property="og:image" content="${escape(image)}">` : "",
     `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">`,
     `<meta name="theme-color" content="${escape(site.colors[2])}">`,
     page === "home"
-      ? `<script type="application/ld+json">${structuredData(site, origin)}</script>`
+      ? `<script type="application/ld+json">${structuredData(site, origin, home)}</script>`
       : "",
   ]
     .filter(Boolean)
@@ -159,7 +162,7 @@ export function renderPage(
     React.createElement(
       "div",
       { className: "public-site" },
-      React.createElement(SiteSurface, { site, page, messages }),
+      React.createElement(SiteSurface, { site, page, messages, base }),
     ),
   );
   return document(head, body, site.language);
@@ -224,13 +227,19 @@ export function robots(origin: string) {
   return `User-agent: *\nDisallow: /admin\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`;
 }
 
-export function sitemap(origin: string, publishedAt?: string) {
-  const lastmod = publishedAt
-    ? `<lastmod>${escape(publishedAt.slice(0, 10))}</lastmod>`
-    : "";
+/** Alle veröffentlichten Websites dieses Servers, je mit ihrer Startseite. */
+export function sitemap(entries: { loc: string; lastmod?: string }[]) {
+  const urls = entries
+    .map(
+      ({ loc, lastmod }) =>
+        `<url><loc>${escape(loc)}</loc>${
+          lastmod ? `<lastmod>${escape(lastmod.slice(0, 10))}</lastmod>` : ""
+        }</url>`,
+    )
+    .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>${escape(origin)}/</loc>${lastmod}</url>
+${urls}
 </urlset>
 `;
 }

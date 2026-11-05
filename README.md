@@ -252,18 +252,55 @@ coordinates for precise placement. Revision checks prevent another editor window
 overwriting concurrent changes. If a conflict occurs, export your draft as JSON before
 reloading the current server version.
 
+## Several websites on one server
+
+One admin account can manage several websites, each at its own address on the server:
+`/` for the home page, or a path such as `/iris` or `/judith`. Behind a domain this becomes
+`https://example.com/iris`.
+
+- Choose the website to edit in the header or under **Einstellungen → Deine Websites**
+  (Settings → Your websites). **Neue Website anlegen** creates a new website and opens the
+  profession picker. **Diese Website löschen** deletes the draft, the published website,
+  its versions and its redirects after a confirmation; uploaded images stay on the server.
+  The last website cannot be deleted. The editor remembers the chosen website per browser.
+- Each website has its own draft, revision, undo history and its latest 20 published
+  versions. Restoring a version only accepts versions of the same website.
+- The address is chosen in the **Veröffentlichen** (Publish) dialog: empty means `/`.
+  Allowed are lowercase letters, digits and single hyphens (at most 60 characters).
+  `admin`, `api`, `uploads`, `images`, `assets`, `impressum` and `datenschutz` are reserved.
+  An address used by another website is rejected. The field is prefilled with the current
+  address, or for a first publication with `/` (if free) or a suggestion from the name.
+- Each website's legal pages live below its address (`/iris/impressum`,
+  `/iris/datenschutz`). Canonical links use the website's own domain (or `PUBLIC_ORIGIN`)
+  plus its address; `/sitemap.xml` lists all published websites.
+- Changing the address on a later publication redirects the old address (HTTP 301,
+  including the legal pages) until another website takes it over.
+- Without a published website at `/`, the home page shows the "not published yet" page.
+- The address belongs to the website on the server, **not** to the draft: JSON backups do
+  not contain it. Loading a backup into another website replaces that website's draft only
+  and keeps its address; the confirmation names the website being replaced. Backup files are
+  named after the website (`klarwarg-iris.json`).
+- API: the editor routes `/api/draft`, `/api/publish`, `/api/versions` and
+  `/api/restore/:id` take the website as `?site=<id>` (without it: the oldest website).
+  `GET/POST /api/sites` lists and creates websites, `DELETE /api/sites/:id` deletes one.
+  `POST /api/publish` accepts `{ "path": "iris" }`.
+
+Installations from before this change hold a single website in `settings`. On the first
+start the server copies the database to `data/backups/klarwarg-before-sites-*.sqlite` and
+moves that website, its versions and its publication to the new `sites` table at `/`.
+
 ## Storage and backups
 
-- `data/klarwerk.sqlite` contains the admin password hash, sessions, draft, published
-  document, and the latest 20 published versions.
+- `data/klarwerk.sqlite` contains the admin password hash, sessions, and per website the
+  draft, published document, address, redirects and the latest 20 published versions.
 - `data/uploads/` contains uploaded images, accessible through their random URLs.
   Upload only images intended for the website.
 - The server holds SQLite in memory through `sql.js` and atomically writes it to disk
   after mutations. Use **one process and one data directory**, without clustering or
   shared network filesystems. This architecture is intended for small websites.
 - For a complete backup, stop the server and copy the whole data directory. JSON export
-  under **Einstellungen** contains content and image references, but not image files,
-  credentials, or version history.
+  under **Einstellungen** contains the content of the open website and image references,
+  but not its address, image files, credentials, or version history.
 - Restore a published version as a new draft under **Einstellungen**. Publish again to
   make the restored content public.
 - Changing the password invalidates previous sessions. Session cookies are HttpOnly,
@@ -366,7 +403,8 @@ stylesheet instead of loading the entire editor application.
   first body text, `lang="de"`, canonical URL, Open Graph metadata, and schema.org
   structured data for the selected profession and contact details. The first uploaded
   photo is used as the social preview image.
-- `/impressum` and `/datenschutz` are dedicated legal pages with `noindex, follow`.
+- `/impressum` and `/datenschutz` (or `/<address>/impressum` …) are dedicated legal pages
+  with `noindex, follow`.
 - `/robots.txt` and `/sitemap.xml` are generated. `/admin` and `/api/` are excluded from
   crawler access; the editor also uses `noindex`.
 - Set `PUBLIC_ORIGIN` to generate correct canonical, sitemap, and preview-image URLs.
