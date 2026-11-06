@@ -25,6 +25,13 @@ npm ci
 npm run dev
 ```
 
+To stop a server started with `npm start` from another terminal on Linux, run `npm stop`
+in the same project directory. It reads `PORT` from the environment or `.env` (default
+4317), verifies that the listening process belongs to this project's server, and sends
+SIGTERM so SQLite can close cleanly. Running it again when stopped is harmless. It needs
+`fuser` from the Linux `psmisc` package. For `npm run dev`, use Ctrl+C in its terminal to
+stop the watcher and Expo together. Container installations use `./klarwarg.sh stop`.
+
 - **Editor:** http://localhost:8091/admin
 - **Public website preview:** http://localhost:8091/
 - **Backend health:** http://localhost:4317/api/health
