@@ -45,6 +45,10 @@ try {
   });
   assert.equal(setup.status(), 200);
   const site = createSite();
+  site.integrations.googlePlayUrl =
+    "https://play.google.com/store/apps/details?id=com.example.app";
+  site.integrations.appStoreUrl =
+    "https://apps.apple.com/at/app/example/id123456789";
   site.name = "Static browser test";
   site.legal.imprint = "Export Imprint";
   site.legal.privacy = "Export Privacy";
@@ -95,6 +99,18 @@ try {
     await page.setViewportSize({ width, height: 950 });
     await page.goto(destination);
     await page.waitForLoadState("networkidle");
+    assert.equal(
+      await page
+        .getByRole("link", { name: "Google Play", exact: false })
+        .getAttribute("href"),
+      site.integrations.googlePlayUrl,
+    );
+    assert.equal(
+      await page
+        .getByRole("link", { name: "App Store", exact: false })
+        .getAttribute("href"),
+      site.integrations.appStoreUrl,
+    );
     assert.equal(
       await page.locator('link[rel="canonical"]').getAttribute("href"),
       destination,

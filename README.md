@@ -491,3 +491,15 @@ The exported site has no admin, API or database. Edit locally, then export and u
 again. Imported services and repositories remain at their exported state; external
 images remain linked to their external URLs. Email, phone and external booking links
 continue working. The existing JSON backup remains a separate editable backup format.
+
+## App Store and Google Play links
+
+The developer template offers separate Apple App Store and Google Play fields under
+**Anbindungen → App Stores**. Both links may be shown at the same time in the contact
+section and are included in the public HTML and ZIP export. Leave a field empty to hide
+its link. Older saved websites receive an empty Google Play field automatically.
+
+Use a public HTTPS URL on `apps.apple.com` for Apple and `play.google.com` for Google
+Play. Google's [documented app listing format](https://developer.android.com/distribute/marketing-tools/linking-to-google-play)
+is `https://play.google.com/store/apps/details?id=your.package.name`; language and
+tracking parameters are preserved.

@@ -243,6 +243,25 @@ export const siteSchema = z.object({
         }
       })
       .default(""),
+    googlePlayUrl: z
+      .string()
+      .max(2000)
+      .refine((value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return (
+            url.protocol === "https:" &&
+            url.hostname === "play.google.com" &&
+            !url.port &&
+            !url.username &&
+            !url.password
+          );
+        } catch {
+          return false;
+        }
+      })
+      .default(""),
     githubUser: z.string().max(39),
     showRepos: z.boolean(),
   }),
@@ -761,6 +780,7 @@ export function createSite(profession = "psychiatry", voice?: Voice): Site {
       bookingUrl: "",
       linkedinUrl: "",
       appStoreUrl: "",
+      googlePlayUrl: "",
       githubUser: "",
       showRepos: true,
     },

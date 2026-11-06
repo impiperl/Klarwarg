@@ -1428,6 +1428,7 @@ function Builder({
       "integrations.linkedinUrl": "integration-linkedin",
       "integrations.bookingUrl": "integration-booking",
       "integrations.appStoreUrl": "integration-appstore",
+      "integrations.googlePlayUrl": "integration-googleplay",
       "integrations.githubUser": "integration-github",
       "legal.imprint": "legal-imprint",
       "legal.privacy": "legal-privacy",
@@ -2367,11 +2368,12 @@ function Builder({
           </div>
         )}
         {(site.profession === "developer" ||
-          !!site.integrations.appStoreUrl) && (
+          !!site.integrations.appStoreUrl ||
+          !!site.integrations.googlePlayUrl) && (
           <div className="panel-section">
             <div className="integration-title">
               <Smartphone size={21} />
-              <h3>App Store</h3>
+              <h3>{t("App Stores")}</h3>
             </div>
             <Field
               path="integrations.appStoreUrl"
@@ -2387,6 +2389,25 @@ function Builder({
                 value={site.integrations.appStoreUrl}
                 onChange={(event) =>
                   updateIntegrations({ appStoreUrl: event.target.value.trim() })
+                }
+              />
+            </Field>
+            <Field
+              path="integrations.googlePlayUrl"
+              label={t("Dein Google-Play-Eintrag")}
+              hint={t(
+                "Füge den öffentlichen Link zu deiner App im Google Play Store ein.",
+              )}
+            >
+              <input
+                type="url"
+                placeholder="https://play.google.com/store/apps/details?id=…"
+                data-editor-field="integration-googleplay"
+                value={site.integrations.googlePlayUrl}
+                onChange={(event) =>
+                  updateIntegrations({
+                    googlePlayUrl: event.target.value.trim(),
+                  })
                 }
               />
             </Field>

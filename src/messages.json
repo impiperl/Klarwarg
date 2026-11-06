@@ -1810,5 +1810,25 @@
   "Bitte eine vollständige HTTP- oder HTTPS-Zieladresse ohne Zugangsdaten, Suchparameter oder Fragment angeben.": {
     "de": "Bitte eine vollständige HTTP- oder HTTPS-Zieladresse ohne Zugangsdaten, Suchparameter oder Fragment angeben.",
     "en": "Please enter a complete HTTP or HTTPS destination URL without credentials, query parameters or a fragment."
+  },
+  "App Stores": {
+    "de": "App Stores",
+    "en": "App Stores"
+  },
+  "Google Play": {
+    "de": "Google Play",
+    "en": "Google Play"
+  },
+  "Dein Google-Play-Eintrag": {
+    "de": "Dein Google-Play-Eintrag",
+    "en": "Your Google Play listing"
+  },
+  "Füge den öffentlichen Link zu deiner App im Google Play Store ein.": {
+    "de": "Füge den öffentlichen Link zu deiner App im Google Play Store ein.",
+    "en": "Add the public link to your app in the Google Play Store."
+  },
+  "Bitte einen vollständigen Google-Play-Link mit https://play.google.com/ eingeben.": {
+    "de": "Bitte einen vollständigen Google-Play-Link mit https://play.google.com/ eingeben.",
+    "en": "Please enter a full Google Play link starting with https://play.google.com/."
   }
 }

@@ -697,6 +697,18 @@ export default function SiteSurface(props: Props) {
                     App Store <ArrowUpRight size={14} />
                   </a>
                 )}
+                {site.integrations.googlePlayUrl && (
+                  <a
+                    href={site.integrations.googlePlayUrl}
+                    {...edit("integration-googleplay")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={prevent}
+                  >
+                    <Smartphone size={18} />
+                    {t("Google Play")} <ArrowUpRight size={14} />
+                  </a>
+                )}
                 {site.integrations.linkedinUrl && (
                   <a
                     href={site.integrations.linkedinUrl}

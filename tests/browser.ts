@@ -605,6 +605,11 @@ try {
     0,
   );
   const appStoreUrl = "https://apps.apple.com/at/app/example/id123456789";
+  const googlePlayUrl =
+    "https://play.google.com/store/apps/details?id=com.example.app&hl=de";
+  await page
+    .getByLabel("Dein Google-Play-Eintrag", { exact: true })
+    .fill(googlePlayUrl);
   await page
     .getByLabel("Dein App-Store-Eintrag", { exact: true })
     .fill(appStoreUrl);
@@ -615,7 +620,18 @@ try {
       document.activeElement?.getAttribute("data-editor-field") ===
       "integration-appstore",
   );
+  await page.locator(`.site-contact a[href="${googlePlayUrl}"]`).click();
+  await page.waitForFunction(
+    () =>
+      document.activeElement?.getAttribute("data-editor-field") ===
+      "integration-googleplay",
+  );
   await page.waitForTimeout(1400);
+  assert.equal(
+    (await (await page.request.get(base + "/api/draft")).json()).site
+      .integrations.googlePlayUrl,
+    googlePlayUrl,
+  );
   assert.equal(
     (await (await page.request.get(base + "/api/draft")).json()).site
       .integrations.appStoreUrl,
@@ -629,7 +645,14 @@ try {
       .inputValue(),
     appStoreUrl,
   );
+  assert.equal(
+    await page
+      .getByLabel("Dein Google-Play-Eintrag", { exact: true })
+      .inputValue(),
+    googlePlayUrl,
+  );
   await page.getByTestId("language-switch").selectOption("en");
+  await page.getByLabel("Your Google Play listing", { exact: true }).waitFor();
   await page.getByLabel("Your App Store listing", { exact: true }).waitFor();
   await page.getByTestId("language-switch").selectOption("de");
   // Invalid links are explained at the field, block saving, and can be located from the summary.
@@ -889,6 +912,7 @@ try {
   assert.equal(lawDraft.integrations.bookingUrl, "");
   assert.equal(lawDraft.integrations.linkedinUrl, "");
   assert.equal(lawDraft.integrations.appStoreUrl, "");
+  assert.equal(lawDraft.integrations.googlePlayUrl, "");
   assert.equal(
     await page.getByLabel("Dein App-Store-Eintrag", { exact: true }).count(),
     0,

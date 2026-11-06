@@ -19,6 +19,7 @@ export function describeIssue(issue: ZodIssue, t: Translate) {
     "integrations.linkedinUrl": "Dein öffentliches LinkedIn-Profil",
     "integrations.bookingUrl": "Öffentlicher Buchungs- oder Portallink",
     "integrations.appStoreUrl": "Dein App-Store-Eintrag",
+    "integrations.googlePlayUrl": "Dein Google-Play-Eintrag",
     "integrations.githubUser": "GitHub-Benutzername",
     "integrations.provider": "Dein Anbieter",
     "legal.imprint": "Impressum",
@@ -85,6 +86,10 @@ export function describeIssue(issue: ZodIssue, t: Translate) {
   else if (key === "integrations.appStoreUrl")
     message = t(
       "Bitte einen vollständigen App-Store-Link mit https://apps.apple.com/ eingeben.",
+    );
+  else if (key === "integrations.googlePlayUrl")
+    message = t(
+      "Bitte einen vollständigen Google-Play-Link mit https://play.google.com/ eingeben.",
     );
   else if (
     key === "integrations.bookingUrl" ||
