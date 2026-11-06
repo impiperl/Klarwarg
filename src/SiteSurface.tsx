@@ -387,10 +387,7 @@ export default function SiteSurface(props: Props) {
   const base = props.base || "";
   const home = legalPage ? base || "/" : "";
   const contactHref = contactLink(site);
-  const headerHref = resolveSiteLink(
-    site.integrations.bookingUrl || "#kontakt",
-    site,
-  );
+  const headerHref = site.contact.email ? "mailto:" + site.contact.email : "";
   const showServices = !site.hiddenSections.includes("services");
   const showContact = !site.hiddenSections.includes("contact");
   const voice = site.voice,
@@ -502,8 +499,8 @@ export default function SiteSurface(props: Props) {
         {headerHref && (
           <a
             className="site-header-cta"
-            {...edit("integration-booking")}
-            href={headerHref.startsWith("#") ? home + headerHref : headerHref}
+            {...edit("contact-email")}
+            href={headerHref}
             onClick={prevent}
           >
             {t("Kontakt aufnehmen ")}

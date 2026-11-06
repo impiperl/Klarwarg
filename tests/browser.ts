@@ -187,7 +187,7 @@ try {
   await page.locator(".site-header-cta").click();
   await page.waitForFunction(
     (selector) => document.querySelector(selector) === document.activeElement,
-    '[data-editor-field="integration-booking"]',
+    '[data-editor-field="contact-email"]',
   );
   await page
     .locator(".site-footer")
