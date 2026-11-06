@@ -112,6 +112,7 @@ function document(head: string, body: string, language: Language = "de") {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 ${head}
+<link rel="icon" type="image/png" href="/images/klarwarg.png">
 <link rel="stylesheet" href="/site.css?v=${cssVersion}">
 </head>
 <body><div id="root">${body}</div></body>

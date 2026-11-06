@@ -6,6 +6,7 @@
     "platforms": ["web"],
     "web": {
       "bundler": "metro",
+      "favicon": "./public/images/klarwarg.png",
       "output": "single",
       "name": "Klarwarg",
       "description": "Eine eigene Website. Ganz einfach."
