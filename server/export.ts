@@ -66,11 +66,15 @@ export function exportWebsite(
     block.src = base + "/" + bundleImage(block.src);
   }
   files["site.css"] = strToU8(css);
-  for (const [page, name] of [
+  const pages = [
     ["home", "index.html"],
     ["imprint", "impressum.html"],
     ["privacy", "datenschutz.html"],
-  ] as const) {
+    ...(snapshot.cv.enabled && snapshot.cv.text.trim()
+      ? [["cv", "lebenslauf.html"] as const]
+      : []),
+  ] as const;
+  for (const [page, name] of pages) {
     let html = renderPage(snapshot, page, target.origin, messages, base);
     // Restrict rewriting to generated HTML attributes, leaving all user text untouched.
     html = html.replace(
@@ -83,7 +87,7 @@ export function exportWebsite(
           return `${kind}="${value.slice(base.length + 1)}"`;
         if (kind !== "href") return attribute;
         if (value.startsWith("/site.css?")) return 'href="site.css"';
-        for (const legal of ["impressum", "datenschutz"])
+        for (const legal of ["impressum", "datenschutz", "lebenslauf"])
           if (value === base + "/" + legal) return `href="${legal}.html"`;
         if (value === (base || "/")) return 'href="index.html"';
         if (base && value.startsWith(base + "#"))
@@ -108,7 +112,12 @@ export function exportWebsite(
     }
     // Canonical and Open Graph links point to the actual exported legal filenames.
     if (page !== "home") {
-      const suffix = page === "imprint" ? "impressum" : "datenschutz";
+      const suffix =
+        page === "cv"
+          ? "lebenslauf"
+          : page === "imprint"
+            ? "impressum"
+            : "datenschutz";
       html = html.replaceAll(
         target.origin + base + "/" + suffix + '"',
         target.origin + base + "/" + suffix + '.html"',
@@ -116,7 +125,14 @@ export function exportWebsite(
     }
     files[name] = strToU8(html);
   }
-  files["sitemap.xml"] = strToU8(sitemap([{ loc: target.href }]));
+  files["sitemap.xml"] = strToU8(
+    sitemap([
+      { loc: target.href },
+      ...(snapshot.cv.enabled && snapshot.cv.text.trim()
+        ? [{ loc: target.href + "lebenslauf.html" }]
+        : []),
+    ]),
+  );
   files["robots.txt"] = strToU8(
     `User-agent: *\nAllow: ${target.pathname}\nSitemap: ${target.href}sitemap.xml\n`,
   );

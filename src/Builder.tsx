@@ -57,6 +57,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
+import CvPanel from "./CvPanel";
 import SiteSurface, {
   legalPaths,
   legalTitles,
@@ -96,12 +97,13 @@ import { describeIssue, validationNotice } from "./validation";
 import { sourceUrl } from "./source";
 const FieldErrors = React.createContext<Record<string, string>>({});
 
-type Tab = "content" | "design" | "layout" | "integrations" | "settings";
+type Tab = "content" | "design" | "layout" | "integrations" | "cv" | "settings";
 const tabs: { id: Tab; label: string; icon: typeof Layers }[] = [
   { id: "content", label: "Inhalte", icon: Layers },
   { id: "design", label: "Design", icon: Paintbrush },
   { id: "layout", label: "Raster", icon: Columns3 },
   { id: "integrations", label: "Anbindungen", icon: Link2 },
+  { id: "cv", label: "Lebenslauf / CV", icon: FileText },
   { id: "settings", label: "Einstellungen", icon: Settings2 },
 ];
 /** Längste Kante eines hochgeladenen Fotos — reicht für die 1200 px breite Fläche auch doppelt dicht. */
@@ -418,7 +420,9 @@ function PublicSite() {
       ? "imprint"
       : segment && "/" + segment === legalPaths.privacy
         ? "privacy"
-        : null;
+        : segment && "/" + segment === legalPaths.cv
+          ? "cv"
+          : null;
   const sitePath = segments[0] && !legalPage(segments[0]) ? segments[0] : "";
   const page: PublicPage =
     legalPage(sitePath ? segments[1] : segments[0]) || "home";
@@ -1134,13 +1138,15 @@ function Builder({
   function editField(field: string) {
     setSelected(null);
     setTab(
-      field.startsWith("integration-")
-        ? "integrations"
-        : field === "domain" || field.startsWith("legal-")
-          ? "settings"
-          : field === "section-label"
-            ? "layout"
-            : "content",
+      field === "cv-text"
+        ? "cv"
+        : field.startsWith("integration-")
+          ? "integrations"
+          : field === "domain" || field.startsWith("legal-")
+            ? "settings"
+            : field === "section-label"
+              ? "layout"
+              : "content",
     );
     setShowPanel(true);
     if (window.innerWidth <= 1050) setInspectorOpen(false);
@@ -1568,7 +1574,9 @@ function Builder({
     }
   }
   const panelContent =
-    tab === "content" ? (
+    tab === "cv" ? (
+      <CvPanel site={site} onChange={(cv) => patch({ cv })} />
+    ) : tab === "content" ? (
       <>
         <div className="panel-section">
           <span className="eyebrow">{t("DEIN AUSGANGSPUNKT")}</span>
@@ -3178,6 +3186,7 @@ function Builder({
                   }
                 >
                   <SiteSurface
+                    page={tab === "cv" ? "cv" : "home"}
                     site={site}
                     editing={!preview}
                     selected={selected}

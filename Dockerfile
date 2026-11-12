@@ -8,6 +8,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npx expo export --platform web --clear && npm run build:server
+RUN npm prune --omit=dev --ignore-scripts --no-audit --no-fund
 
 FROM docker.io/library/node:22-bookworm-slim
 WORKDIR /app
@@ -19,7 +20,7 @@ COPY --from=build /app/server-build ./server-build
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 COPY --from=build /app/src/styles.css ./src/styles.css
-COPY --from=build /app/node_modules/sql.js ./node_modules/sql.js
+COPY --from=build /app/node_modules ./node_modules
 COPY deploy/entrypoint.sh /usr/local/bin/klarwarg-entrypoint
 RUN chmod 0755 /usr/local/bin/klarwarg-entrypoint && mkdir -p /data
 VOLUME /data

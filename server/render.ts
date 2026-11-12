@@ -136,13 +136,16 @@ export function renderPage(
         ? `${site.name} · ${site.tagline}`
         : site.name
       : `${t(legalTitles[page])} · ${site.name}`;
-  const description = describe(site);
+  const description =
+    page === "cv" ? oneLine(site.cv.text).slice(0, 160) : describe(site);
   const image = previewImage(site, origin);
   const head = [
     `<title>${escape(title)}</title>`,
     `<meta name="description" content="${escape(description)}">`,
     // Rechtstexte gehören nicht in die Suchtreffer, ihre Links dürfen aber verfolgt werden.
-    page === "home" ? "" : `<meta name="robots" content="noindex, follow">`,
+    page === "home" || page === "cv"
+      ? ""
+      : `<meta name="robots" content="noindex, follow">`,
     `<link rel="canonical" href="${escape(url)}">`,
     `<meta property="og:type" content="website">`,
     `<meta property="og:locale" content="${site.language === "en" ? "en_GB" : "de_DE"}">`,

@@ -510,3 +510,37 @@ Use a public HTTPS URL on `apps.apple.com` for Apple and `play.google.com` for G
 Play. Google's [documented app listing format](https://developer.android.com/distribute/marketing-tools/linking-to-google-play)
 is `https://play.google.com/store/apps/details?id=your.package.name`; language and
 tracking parameters are preserved.
+
+### CV import and public HTML page
+
+The admin tab **Lebenslauf / CV** accepts PDF, DOCX and ODT files (up to 8 MB,
+20 PDF pages and 50,000 extracted characters). Old `.doc` files must first be saved
+as DOCX or PDF. Word tables and ODT paragraphs are read as text. PDF text is extracted
+directly; pages with little selectable text use local German/English Tesseract OCR.
+Review the import preview, correct names/dates/reading order, then accept it into the
+draft. You can also paste or edit text directly. The large website preview shows the
+CV page while the CV tab is selected.
+
+Enable **Lebenslauf als öffentliche Unterseite anzeigen** and use the normal Publish
+button. The published snapshot appears at `/lebenslauf` or `/<website>/lebenslauf`,
+linked in navigation and included in the sitemap. It is server-rendered, indexable
+HTML with its own canonical URL. Indexing by a search engine is not guaranteed.
+The HTML ZIP also includes `lebenslauf.html` and its sitemap entry. Disabling or
+removing the CV takes effect publicly on the next publication. Older saved website
+versions and backups may still contain previously accepted CV text.
+
+Original documents and intermediate scan images are processed only in memory, in a
+short-lived child process. They are not stored, served or offered for download. No
+external OCR/API service is contacted. OCR language data is installed with npm;
+temporary local symlinks to these language files are removed after processing.
+An import does not modify the draft until accepted. Only one import is processed at
+a time, with a two-minute timeout. Complex layouts can need manual correction;
+images, fonts and the original document layout are not reproduced. Inspect personal
+details before enabling public access.
+
+`npm ci` installs the parser/OCR runtime dependencies, including the prebuilt native
+Canvas package used by PDF.js. Keep Canvas on PDF.js's compatible `0.1.x` version:
+loading two native Canvas major versions in one process can crash PDF scan import.
+The server build includes `cv-worker.mjs`; the container retains production runtime
+packages and language data. `lebenslauf` is reserved for new website addresses;
+a pre-existing website at that address retains priority over the root CV page.

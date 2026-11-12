@@ -1830,5 +1830,117 @@
   "Bitte einen vollständigen Google-Play-Link mit https://play.google.com/ eingeben.": {
     "de": "Bitte einen vollständigen Google-Play-Link mit https://play.google.com/ eingeben.",
     "en": "Please enter a full Google Play link starting with https://play.google.com/."
+  },
+  "Lebenslauf": {
+    "de": "Lebenslauf",
+    "en": "CV"
+  },
+  "Lebenslauf / CV": {
+    "de": "Lebenslauf / CV",
+    "en": "CV / Résumé"
+  },
+  "PDF, DOCX oder ODT · bis 8 MB und 20 PDF-Seiten. Scans werden mit Texterkennung gelesen.": {
+    "de": "PDF, DOCX oder ODT · bis 8 MB und 20 PDF-Seiten. Scans werden mit Texterkennung gelesen.",
+    "en": "PDF, DOCX or ODT · up to 8 MB and 20 PDF pages. Scans are read using OCR."
+  },
+  "Die Originaldatei wird nur zum Auslesen verwendet und nicht gespeichert. Nur der übernommene Text bleibt im Entwurf.": {
+    "de": "Die Originaldatei wird nur zum Auslesen verwendet und nicht gespeichert. Nur der übernommene Text bleibt im Entwurf.",
+    "en": "The original file is used only to extract text and is not stored. Only the text you accept stays in the draft."
+  },
+  "Lebenslauf wird gelesen …": {
+    "de": "Lebenslauf wird gelesen …",
+    "en": "Reading CV …"
+  },
+  "Lebenslauf hochladen": {
+    "de": "Lebenslauf hochladen",
+    "en": "Upload CV"
+  },
+  "Die Texterkennung kann bis zu zwei Minuten dauern.": {
+    "de": "Die Texterkennung kann bis zu zwei Minuten dauern.",
+    "en": "OCR can take up to two minutes."
+  },
+  "Erkannten Text prüfen": {
+    "de": "Erkannten Text prüfen",
+    "en": "Review extracted text"
+  },
+  "Texterkennung verwendet. Bitte Namen, Jahreszahlen und Lesereihenfolge prüfen.": {
+    "de": "Texterkennung verwendet. Bitte Namen, Jahreszahlen und Lesereihenfolge prüfen.",
+    "en": "OCR was used. Please check names, dates and reading order."
+  },
+  "Importvorschau": {
+    "de": "Importvorschau",
+    "en": "Import preview"
+  },
+  "Text in den Entwurf übernehmen": {
+    "de": "Text in den Entwurf übernehmen",
+    "en": "Accept text into draft"
+  },
+  "Text in den Entwurf übernommen.": {
+    "de": "Text in den Entwurf übernommen.",
+    "en": "Text accepted into draft."
+  },
+  "Import verwerfen": {
+    "de": "Import verwerfen",
+    "en": "Discard import"
+  },
+  "Lebenslauftext": {
+    "de": "Lebenslauftext",
+    "en": "CV text"
+  },
+  "Lebenslauf als öffentliche Unterseite anzeigen": {
+    "de": "Lebenslauf als öffentliche Unterseite anzeigen",
+    "en": "Show CV as a public page"
+  },
+  "Mit „Veröffentlichen“ wird der Text als verlinkte HTML-Seite unter /lebenslauf öffentlich und für Suchmaschinen zugänglich. Prüfe vorher, welche persönlichen Angaben du veröffentlichen möchtest.": {
+    "de": "Mit „Veröffentlichen“ wird der Text als verlinkte HTML-Seite unter /lebenslauf öffentlich und für Suchmaschinen zugänglich. Prüfe vorher, welche persönlichen Angaben du veröffentlichen möchtest.",
+    "en": "Publishing makes the text public as a linked HTML page at /lebenslauf, accessible to search engines. Review which personal details you want to publish first."
+  },
+  "Lebenslauf aus dem Entwurf entfernen": {
+    "de": "Lebenslauf aus dem Entwurf entfernen",
+    "en": "Remove CV from draft"
+  },
+  "Bitte eine PDF-, DOCX- oder ODT-Datei auswählen.": {
+    "de": "Bitte eine PDF-, DOCX- oder ODT-Datei auswählen.",
+    "en": "Please choose a PDF, DOCX or ODT file."
+  },
+  "Die Datei konnte nicht gelesen werden. Bitte erneut auswählen.": {
+    "de": "Die Datei konnte nicht gelesen werden. Bitte erneut auswählen.",
+    "en": "The file could not be read. Please select it again."
+  },
+  "Bitte einen Lebenslauf bis 8 MB auswählen.": {
+    "de": "Bitte einen Lebenslauf bis 8 MB auswählen.",
+    "en": "Please choose a CV up to 8 MB."
+  },
+  "Die Datei passt nicht zum gewählten Dateiformat.": {
+    "de": "Die Datei passt nicht zum gewählten Dateiformat.",
+    "en": "The file does not match its file format."
+  },
+  "Die Verarbeitung dauert zu lange. Bitte eine kleinere Datei verwenden.": {
+    "de": "Die Verarbeitung dauert zu lange. Bitte eine kleinere Datei verwenden.",
+    "en": "Processing is taking too long. Please use a smaller file."
+  },
+  "Der Lebenslauf konnte nicht verarbeitet werden.": {
+    "de": "Der Lebenslauf konnte nicht verarbeitet werden.",
+    "en": "The CV could not be processed."
+  },
+  "Es wurde kein Text erkannt. Bitte eine andere Datei verwenden oder den Text einfügen.": {
+    "de": "Es wurde kein Text erkannt. Bitte eine andere Datei verwenden oder den Text einfügen.",
+    "en": "No text was detected. Please use another file or paste the text."
+  },
+  "Der Lebenslauf ist zu lang (höchstens 50.000 Zeichen).": {
+    "de": "Der Lebenslauf ist zu lang (höchstens 50.000 Zeichen).",
+    "en": "The CV is too long (maximum 50,000 characters)."
+  },
+  "Bitte einen Lebenslauf mit höchstens 20 Seiten auswählen.": {
+    "de": "Bitte einen Lebenslauf mit höchstens 20 Seiten auswählen.",
+    "en": "Please choose a CV with no more than 20 pages."
+  },
+  "Bitte eine PDF-Datei ohne Passwortschutz auswählen.": {
+    "de": "Bitte eine PDF-Datei ohne Passwortschutz auswählen.",
+    "en": "Please choose a PDF without password protection."
+  },
+  "Ein Lebenslauf wird bereits verarbeitet. Bitte kurz warten.": {
+    "de": "Ein Lebenslauf wird bereits verarbeitet. Bitte kurz warten.",
+    "en": "A CV is already being processed. Please wait a moment."
   }
 }

@@ -15,6 +15,7 @@ export const reservedSitePaths = [
   "assets",
   "impressum",
   "datenschutz",
+  "lebenslauf",
 ] as const;
 
 const pattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

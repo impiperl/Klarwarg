@@ -37,12 +37,14 @@ import { sourceUrl } from "./source";
 
 export type Selection = { section: string; block: string } | null;
 /** Welche öffentliche Seite gezeigt wird: die Website selbst oder einer der Rechtstexte. */
-export type PublicPage = "home" | "imprint" | "privacy";
+export type PublicPage = "home" | "imprint" | "privacy" | "cv";
 export const legalPaths = {
+  cv: "/lebenslauf",
   imprint: "/impressum",
   privacy: "/datenschutz",
 } as const;
 export const legalTitles = {
+  cv: "Lebenslauf",
   imprint: "Impressum",
   privacy: "Datenschutz",
 } as const;
@@ -383,9 +385,10 @@ export default function SiteSurface(props: Props) {
   const [legal, setLegal] = useState<"imprint" | "privacy" | null>(null);
   // Öffentlich sind Impressum und Datenschutz eigene Seiten; im Editor klappen sie auf.
   const fluid = !editing && !mobile;
-  const legalPage = page === "home" ? null : page;
+  const legalPage = page === "imprint" || page === "privacy" ? page : null;
+  const hasCv = site.cv.enabled && !!site.cv.text.trim();
   const base = props.base || "";
-  const home = legalPage ? base || "/" : "";
+  const home = page !== "home" ? base || "/" : "";
   const contactHref = contactLink(site);
   const headerHref = site.contact.email ? "mailto:" + site.contact.email : "";
   const showServices = !site.hiddenSections.includes("services");
@@ -495,6 +498,15 @@ export default function SiteSurface(props: Props) {
               {t("Kontakt")}
             </a>
           )}
+          {hasCv && (
+            <a
+              href={base + legalPaths.cv}
+              onClick={prevent}
+              {...edit("cv-text")}
+            >
+              {t("Lebenslauf")}
+            </a>
+          )}
         </nav>
         {headerHref && (
           <a
@@ -508,7 +520,24 @@ export default function SiteSurface(props: Props) {
           </a>
         )}
       </header>
-      {legalPage ? (
+      {page === "cv" ? (
+        <main id="site-content">
+          <section className="legal-content cv-content">
+            <h1>
+              {t("Lebenslauf")} · {site.name}
+            </h1>
+            {site.cv.text
+              .split(/\n\s*\n/)
+              .filter(Boolean)
+              .map((text, i) => (
+                <p key={i}>{text}</p>
+              ))}
+            <a className="legal-back" href={base || "/"}>
+              {t("Zur Startseite")}
+            </a>
+          </section>
+        </main>
+      ) : legalPage ? (
         <main id="site-content">
           <section className="legal-content">
             <h1>{t(legalTitles[legalPage])}</h1>

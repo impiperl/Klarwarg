@@ -2715,3 +2715,6 @@ input::placeholder {
   justify-content: flex-end;
   gap: 12px;
 }
+
+.cv-content p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cv-editor { min-height: 320px; width: 100%; }

@@ -160,6 +160,12 @@ export const domainSchema = z
   .default("");
 export const siteSchema = z.object({
   domain: domainSchema,
+  cv: z
+    .object({
+      text: z.string().max(50000),
+      enabled: z.boolean(),
+    })
+    .default({ text: "", enabled: false }),
   hiddenSections: z
     .array(z.enum(["services", "projects", "contact"]))
     .max(3)

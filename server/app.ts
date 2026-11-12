@@ -21,6 +21,7 @@ import { Store, SitePathTakenError } from "./store.ts";
 import { loginCredentials } from "./admin.ts";
 import { githubRepos } from "./github.ts";
 import { exportWebsite, exportTarget } from "./export.ts";
+import { parseCv, CvError } from "./cv.ts";
 import {
   createSite,
   siteSchema,
@@ -343,12 +344,10 @@ export async function createApp(
       })
       .parse(req.body);
     if (!site.legal.imprint.trim() || !site.legal.privacy.trim())
-      return res
-        .status(409)
-        .json({
-          error:
-            "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).",
-        });
+      return res.status(409).json({
+        error:
+          "Bitte zuerst Impressum und Datenschutzerklärung ausfüllen (Einstellungen → Impressum & Datenschutz).",
+      });
     try {
       const archive = exportWebsite(
         site,
@@ -363,12 +362,10 @@ export async function createApp(
       res.setHeader("Cache-Control", "no-store");
       res.type("application/zip").send(Buffer.from(archive));
     } catch {
-      res
-        .status(400)
-        .json({
-          error:
-            "Der HTML-Export ist fehlgeschlagen. Bitte Zieladresse und verwendete Bilder prüfen.",
-        });
+      res.status(400).json({
+        error:
+          "Der HTML-Export ist fehlgeschlagen. Bitte Zieladresse und verwendete Bilder prüfen.",
+      });
     }
   });
   app.post("/api/publish", auth, withSite, (req, res) => {
@@ -447,6 +444,25 @@ export async function createApp(
     store.db.run("DELETE FROM sessions");
     session(res);
     res.json({ ok: true });
+  });
+  let cvBusy = false;
+  app.post("/api/cv/parse", auth, async (req, res, next) => {
+    if (cvBusy)
+      return res.status(429).json({
+        error: "Ein Lebenslauf wird bereits verarbeitet. Bitte kurz warten.",
+      });
+    cvBusy = true;
+    try {
+      const result = await parseCv(req.body);
+      res.setHeader("Cache-Control", "no-store");
+      res.json(result);
+    } catch (error) {
+      if (error instanceof CvError)
+        return res.status(400).json({ error: error.message });
+      next(error);
+    } finally {
+      cvBusy = false;
+    }
   });
   app.post("/api/upload", auth, (req, res) => {
     const { data } = z
@@ -642,6 +658,7 @@ export async function createApp(
     (site?.domain || hostOrigin(req)).replace(/\/+$/, "");
   const legalSuffix = {
     home: "",
+    cv: "/lebenslauf",
     imprint: "/impressum",
     privacy: "/datenschutz",
   };
@@ -668,6 +685,12 @@ export async function createApp(
     );
     res.setHeader("Cache-Control", "no-cache");
     const found = store.siteAt(path);
+    if (
+      found &&
+      page === "cv" &&
+      !(found.site.cv.enabled && found.site.cv.text.trim())
+    )
+      return notFound(req, res);
     if (found)
       return res
         .type("html")
@@ -690,6 +713,14 @@ export async function createApp(
   app.get("/", publicPage("home"));
   app.get("/impressum", publicPage("imprint"));
   app.get("/datenschutz", publicPage("privacy"));
+  app.get("/lebenslauf", (req, res) =>
+    serveSite(
+      store.siteAt("lebenslauf") ? "lebenslauf" : "",
+      store.siteAt("lebenslauf") ? "home" : "cv",
+      req,
+      res,
+    ),
+  );
   app.get("/site.css", (req, res) => {
     res.setHeader(
       "Cache-Control",
@@ -712,6 +743,17 @@ export async function createApp(
           loc: siteOrigin(req, found.site) + (sitePathBase(record.path) || "/"),
           lastmod: found.publishedAt,
         },
+        ...(found.site.cv.enabled && found.site.cv.text.trim()
+          ? [
+              {
+                loc:
+                  siteOrigin(req, found.site) +
+                  sitePathBase(record.path) +
+                  "/lebenslauf",
+                lastmod: found.publishedAt,
+              },
+            ]
+          : []),
       ];
     });
     if (!entries.length) return res.status(404).type("text").send("");
@@ -741,12 +783,20 @@ export async function createApp(
   const pathPage =
     (page: PublicPage) => (req: Request, res: Response, next: NextFunction) => {
       const path = String(req.params.path);
-      if (sitePathProblem(path)) return next();
+      if (
+        sitePathProblem(path) &&
+        !(
+          path === "lebenslauf" &&
+          (store.siteAt(path) || store.redirect(path) !== undefined)
+        )
+      )
+        return next();
       serveSite(path, page, req, res);
     };
   app.get("/:path", pathPage("home"));
   app.get("/:path/impressum", pathPage("imprint"));
   app.get("/:path/datenschutz", pathPage("privacy"));
+  app.get("/:path/lebenslauf", pathPage("cv"));
   app.use(
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
       if (error instanceof ZodError)
