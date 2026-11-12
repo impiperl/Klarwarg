@@ -158,7 +158,28 @@ export const domainSchema = z
       : "",
   )
   .default("");
+export const logoIconIds = [
+  "leaf",
+  "heart",
+  "stethoscope",
+  "code",
+  "briefcase",
+  "scale",
+  "wrench",
+  "sparkles",
+  "star",
+  "sun",
+  "flower",
+  "building",
+] as const;
 export const siteSchema = z.object({
+  logo: z
+    .object({
+      mode: z.enum(["icon", "image"]),
+      icon: z.enum(logoIconIds),
+      src: imageSrc,
+    })
+    .default({ mode: "icon", icon: "leaf", src: "" }),
   domain: domainSchema,
   cv: z
     .object({

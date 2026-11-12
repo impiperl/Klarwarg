@@ -58,6 +58,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import CvPanel from "./CvPanel";
+import { LogoEditor } from "./SiteLogo";
 import SiteSurface, {
   legalPaths,
   legalTitles,
@@ -1030,7 +1031,11 @@ function Builder({
     setTemplateBusy(true);
     setTemplateError("");
     try {
-      const next = { ...createSite(templateChoice), domain: previous.domain };
+      const next = {
+        ...createSite(templateChoice),
+        domain: previous.domain,
+        logo: previous.logo,
+      };
       integrationGeneration.current += 1;
       dragStart.current = null;
       change(next, false);
@@ -1246,7 +1251,7 @@ function Builder({
       setExportBusy(false);
     }
   }
-  async function upload(file?: File) {
+  async function upload(file?: File, target: "block" | "logo" = "block") {
     if (!file) return;
     // Fotos werden vor dem Hochladen verkleinert, deshalb dürfen sie größer sein als GIFs.
     const limit = file.type === "image/gif" ? 8 : 30;
@@ -1258,8 +1263,19 @@ function Builder({
     try {
       const data = await prepareImage(file);
       const result = await api("/upload", { data });
-      mutateBlock({ src: result.url, alt: file.name.replace(/\.[^.]+$/, "") });
-      setNotice("Bild hochgeladen. Ergänze eine passende Bildbeschreibung.");
+      if (target === "logo") {
+        if (draft.current)
+          patch({
+            logo: { ...draft.current.logo, mode: "image", src: result.url },
+          });
+        setNotice("Logo hochgeladen.");
+      } else {
+        mutateBlock({
+          src: result.url,
+          alt: file.name.replace(/\.[^.]+$/, ""),
+        });
+        setNotice("Bild hochgeladen. Ergänze eine passende Bildbeschreibung.");
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -1830,6 +1846,14 @@ function Builder({
               </button>
             ))}
           </div>
+        </div>
+        <div className="panel-section">
+          <LogoEditor
+            logo={site.logo}
+            onChange={(logo) => patch({ logo })}
+            onUpload={(file) => upload(file, "logo")}
+            busy={syncing === "upload"}
+          />
         </div>
         <details className="panel-section" id="header-settings">
           <summary>

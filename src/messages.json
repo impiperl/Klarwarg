@@ -1942,5 +1942,85 @@
   "Ein Lebenslauf wird bereits verarbeitet. Bitte kurz warten.": {
     "de": "Ein Lebenslauf wird bereits verarbeitet. Bitte kurz warten.",
     "en": "A CV is already being processed. Please wait a moment."
+  },
+  "Logo neben dem Namen": {
+    "de": "Logo neben dem Namen",
+    "en": "Logo next to the name"
+  },
+  "Logo-Art": {
+    "de": "Logo-Art",
+    "en": "Logo type"
+  },
+  "Icon": {
+    "de": "Icon",
+    "en": "Icon"
+  },
+  "Eigenes Bild": {
+    "de": "Eigenes Bild",
+    "en": "Custom image"
+  },
+  "Logo-Symbol auswählen": {
+    "de": "Logo-Symbol auswählen",
+    "en": "Choose a logo icon"
+  },
+  "Logo-Symbol: {name}": {
+    "de": "Logo-Symbol: {name}",
+    "en": "Logo icon: {name}"
+  },
+  "Blatt": {
+    "de": "Blatt",
+    "en": "Leaf"
+  },
+  "Herz": {
+    "de": "Herz",
+    "en": "Heart"
+  },
+  "Medizin": {
+    "de": "Medizin",
+    "en": "Medicine"
+  },
+  "Waage": {
+    "de": "Waage",
+    "en": "Scales"
+  },
+  "Funkeln": {
+    "de": "Funkeln",
+    "en": "Sparkles"
+  },
+  "Stern": {
+    "de": "Stern",
+    "en": "Star"
+  },
+  "Sonne": {
+    "de": "Sonne",
+    "en": "Sun"
+  },
+  "Blume": {
+    "de": "Blume",
+    "en": "Flower"
+  },
+  "Unternehmen": {
+    "de": "Unternehmen",
+    "en": "Business"
+  },
+  "Logo-Vorschau": {
+    "de": "Logo-Vorschau",
+    "en": "Logo preview"
+  },
+  "PNG, JPG, WebP oder GIF. Transparente Bilder bleiben transparent. Das Logo wird vollständig eingepasst.": {
+    "de": "PNG, JPG, WebP oder GIF. Transparente Bilder bleiben transparent. Das Logo wird vollständig eingepasst.",
+    "en": "PNG, JPG, WebP or GIF. Transparent images retain transparency. The logo is fitted without cropping."
+  },
+  "Logo wird hochgeladen …": {
+    "de": "Logo wird hochgeladen …",
+    "en": "Uploading logo …"
+  },
+  "Logo-Bild hochladen": {
+    "de": "Logo-Bild hochladen",
+    "en": "Upload logo image"
+  },
+  "Logo hochgeladen.": {
+    "de": "Logo hochgeladen.",
+    "en": "Logo uploaded."
   }
 }

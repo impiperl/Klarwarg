@@ -15,7 +15,7 @@
     "build:server": "esbuild server/index.ts server/create-admin.ts server/cv-worker.mjs --bundle --platform=node --format=esm --target=node20 --jsx=automatic --outdir=server-build --out-extension:.js=.mjs --external:sql.js --external:pdfjs-dist --external:@napi-rs/canvas --external:tesseract.js --external:fast-xml-parser --log-level=warning \"--banner:js=import{createRequire as __cr}from'node:module';const require=__cr(import.meta.url);\"",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "test:browser": "tsx tests/browser.ts && tsx tests/browser-sites.ts && tsx tests/browser-export.ts && tsx tests/browser-cv.ts",
+    "test:browser": "tsx tests/browser.ts && tsx tests/browser-sites.ts && tsx tests/browser-export.ts && tsx tests/browser-cv.ts && tsx tests/browser-logo.ts",
     "format": "prettier --write src server tests",
     "test:browser:export": "tsx tests/browser-export.ts",
     "stop": "tsx server/stop.ts"

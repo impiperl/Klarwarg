@@ -1,4 +1,5 @@
 import BrandLogo from "./BrandLogo";
+import { logoIcons } from "./SiteLogo";
 import { useI18n } from "./i18n";
 import { createTranslator, type Messages } from "./translations";
 import React, {
@@ -20,7 +21,6 @@ import {
   Linkedin,
   Star,
   Move,
-  Leaf,
 } from "lucide-react";
 import {
   fillName,
@@ -387,6 +387,7 @@ export default function SiteSurface(props: Props) {
   const fluid = !editing && !mobile;
   const legalPage = page === "imprint" || page === "privacy" ? page : null;
   const hasCv = site.cv.enabled && !!site.cv.text.trim();
+  const LogoIcon = logoIcons.find((entry) => entry.id === site.logo.icon)!.Icon;
   const base = props.base || "";
   const home = page !== "home" ? base || "/" : "";
   const contactHref = contactLink(site);
@@ -461,8 +462,19 @@ export default function SiteSurface(props: Props) {
           className="site-brand"
           {...edit("name")}
         >
-          <span className="site-brand-icon">
-            <Leaf size={22} />
+          <span
+            className={
+              site.logo.mode === "image" && site.logo.src
+                ? "site-brand-image"
+                : "site-brand-icon"
+            }
+            {...edit("logo")}
+          >
+            {site.logo.mode === "image" && site.logo.src ? (
+              <img src={asset(site.logo.src)} alt="" />
+            ) : (
+              <LogoIcon size={22} aria-hidden="true" />
+            )}
           </span>
           <span>
             {site.name}

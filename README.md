@@ -544,3 +544,17 @@ loading two native Canvas major versions in one process can crash PDF scan impor
 The server build includes `cv-worker.mjs`; the container retains production runtime
 packages and language data. `lebenslauf` is reserved for new website addresses;
 a pre-existing website at that address retains priority over the root CV page.
+
+### Website logo
+
+Under **Inhalte → Logo neben dem Namen**, choose one of twelve icons or upload a
+PNG, JPG, WebP or GIF. Clicking the existing header mark in the editor opens this
+setting. Transparent images retain transparency; images fit inside a 48 px square
+without cropping. Icons keep the existing header mark style. Switching modes keeps
+your uploaded image and selected icon, so you can switch back. A template change
+preserves the logo. Existing websites default to the original leaf icon.
+
+The logo belongs to the website draft and becomes public through the normal Publish
+button. It appears beside the name on all public pages, including CV and legal pages;
+HTML ZIP exports include the active local image. Image upload uses the existing
+image preparation and upload path; image files remain available as website assets.

@@ -65,6 +65,11 @@ export function exportWebsite(
     // Absolute preview metadata includes the destination subfolder. HTML assets become relative below.
     block.src = base + "/" + bundleImage(block.src);
   }
+  if (
+    snapshot.logo.mode === "image" &&
+    /^\/(uploads|images)\//.test(snapshot.logo.src)
+  )
+    snapshot.logo.src = base + "/" + bundleImage(snapshot.logo.src);
   files["site.css"] = strToU8(css);
   const pages = [
     ["home", "index.html"],
